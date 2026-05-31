@@ -73,6 +73,7 @@ export default function RoomPage() {
   const [answerReadyBy, setAnswerReadyBy] = useState<string[]>([]);
   const [myAnswerReady, setMyAnswerReady] = useState(false);
   const [gameDuration, setGameDuration] = useState<number>(DEFAULT_SETTINGS.duration);
+  const [timeLeft, setTimeLeft] = useState<number>(DEFAULT_SETTINGS.duration);
   const inputValueRef = useRef('');
   const [roundAnswers, setRoundAnswers] = useState<{ playerId: string; displayName: string | null; guessedValue: number | null; finalScore: number }[]>([]);
   const [myDisplayName, setMyDisplayName] = useState<string>(() =>
@@ -554,18 +555,12 @@ export default function RoomPage() {
     const question = questions[round];
     return (
       <div style={{ height: '100%', overflow: 'hidden', position: 'relative', backgroundColor: 'var(--color-bg)' }}>
-        <div className="flex items-center justify-between px-5 pt-5">
-          <button
-            onClick={() => router.push('/')}
-            className="text-sm px-2 py-1 rounded-lg"
-            style={{ color: 'var(--color-text-muted)' }}
-          >
-            ← Menü
-          </button>
+        <div className="hidden">
           <Timer
             key={`${sessionId}-${round}`}
             duration={gameDuration}
             onExpire={() => submitGuess(inputValue)}
+            onTick={setTimeLeft}
           />
         </div>
         <QuestionCard question={question} round={round + 1} total={questions.length} inputValue={inputValue} />
@@ -576,6 +571,7 @@ export default function RoomPage() {
           submitReady={myAnswerReady}
           submitReadyCount={answerReadyBy.length}
           totalPlayers={connectedPlayersRef.current.length}
+          timeLeft={timeLeft}
         />
       </div>
     );

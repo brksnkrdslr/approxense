@@ -6,34 +6,38 @@ interface TimerProps {
   duration: number;
   onExpire: () => void;
   paused?: boolean;
+  /** inline: Keypad içinde kullanım için timeLeft'i dışarı ilet */
+  onTick?: (timeLeft: number) => void;
 }
 
-export default function Timer({ duration, onExpire, paused = false }: TimerProps) {
+export default function Timer({ duration, onExpire, paused = false, onTick }: TimerProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
   const onExpireRef = useRef(onExpire);
   onExpireRef.current = onExpire;
 
+  useEffect(() => { setTimeLeft(duration); }, [duration]);
+
   useEffect(() => {
-    setTimeLeft(duration);
-  }, [duration]);
+    onTick?.(timeLeft);
+  }, [timeLeft]);
 
   useEffect(() => {
     if (paused) return;
-    if (timeLeft <= 0) {
-      onExpireRef.current();
-      return;
-    }
-
+    if (timeLeft <= 0) { onExpireRef.current(); return; }
     const id = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(id);
   }, [timeLeft, paused]);
 
-  const isUrgent = timeLeft <= 3;
+  const isUrgent = timeLeft <= 5;
 
   return (
     <div
-      className="text-3xl font-mono font-medium tabular-nums w-10 text-right"
-      style={{ color: isUrgent ? 'var(--color-danger)' : 'var(--color-text-primary)' }}
+      className="font-mono font-semibold tabular-nums"
+      style={{
+        fontSize: isUrgent ? '2rem' : '1.5rem',
+        color: isUrgent ? 'var(--color-danger)' : 'var(--color-text-primary)',
+        transition: 'font-size 0.15s, color 0.15s',
+      }}
       aria-label={`${timeLeft} saniye kaldı`}
     >
       {timeLeft}

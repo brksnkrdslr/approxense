@@ -29,6 +29,7 @@ export default function GamePage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [gameDuration, setGameDuration] = useState<number>(DEFAULT_SETTINGS.duration);
+  const [timeLeft, setTimeLeft] = useState<number>(DEFAULT_SETTINGS.duration);
   const submitLock = useRef(false);
 
   useEffect(() => {
@@ -136,18 +137,13 @@ export default function GamePage() {
     <div style={{ height: '100%', overflow: 'hidden', position: 'relative', backgroundColor: 'var(--color-bg)' }}>
       {phase === 'playing' && (
         <>
-          <div className="flex items-center justify-between px-5 pt-5">
-            <button
-              onClick={() => router.push('/')}
-              className="text-sm px-2 py-1 rounded-lg"
-              style={{ color: 'var(--color-text-muted)' }}
-            >
-              ← Menü
-            </button>
+          {/* Timer — görünmez, sadece tick için */}
+          <div className="hidden">
             <Timer
               key={`${session.sessionId}-${round}`}
               duration={gameDuration}
               onExpire={() => submitGuess(inputValue)}
+              onTick={setTimeLeft}
             />
           </div>
           <QuestionCard
@@ -161,6 +157,7 @@ export default function GamePage() {
             onChange={setInputValue}
             onSubmitReady={() => submitGuess(inputValue)}
             submitReady={isSubmitting}
+            timeLeft={timeLeft}
           />
         </>
       )}

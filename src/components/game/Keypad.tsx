@@ -6,9 +6,11 @@ interface KeypadProps {
   disabled?: boolean;
   // Hazır butonu
   onSubmitReady?: () => void;
-  submitReady?: boolean;       // bu oyuncu hazır mı
-  submitReadyCount?: number;   // kaç oyuncu hazır (çok oyunculu)
-  totalPlayers?: number;       // toplam oyuncu sayısı
+  submitReady?: boolean;
+  submitReadyCount?: number;
+  totalPlayers?: number;
+  // Timer (Hazır butonunun solunda gösterilir)
+  timeLeft?: number;
 }
 
 const KEYS = [
@@ -34,6 +36,7 @@ export default function Keypad({
   submitReady = false,
   submitReadyCount,
   totalPlayers,
+  timeLeft,
 }: KeypadProps) {
   function handleKey(key: string) {
     if (disabled) return;
@@ -62,11 +65,13 @@ export default function Keypad({
   const isMulti = totalPlayers !== undefined && totalPlayers > 1;
   const readyLabel = isMulti
     ? submitReady
-      ? `⏳ Bekleniyor… ${submitReadyCount ?? 1}/${totalPlayers} (İptal)`
+      ? `⏳ ${submitReadyCount ?? 1}/${totalPlayers}`
       : 'Hazır'
     : submitReady
-      ? '⏳ Hesaplanıyor…'
+      ? '⏳'
       : 'Hazır';
+
+  const isUrgent = timeLeft !== undefined && timeLeft <= 5;
 
   return (
     <div
@@ -74,12 +79,27 @@ export default function Keypad({
       style={{ backgroundColor: 'var(--color-surface)', borderTop: '1px solid var(--color-border)' }}
     >
       {showHazir && (
-        <div className="px-3 pt-3">
+        <div className="px-3 pt-3 flex items-center gap-3">
+          {/* Geri sayım — sol taraf */}
+          <div
+            className="flex-1 flex items-center justify-center font-mono font-bold tabular-nums"
+            style={{
+              fontSize: isUrgent ? '3rem' : '2.25rem',
+              color: isUrgent ? 'var(--color-danger)' : 'var(--color-text-primary)',
+              transition: 'font-size 0.15s ease, color 0.15s ease',
+              lineHeight: 1,
+            }}
+          >
+            {timeLeft ?? ''}
+          </div>
+          {/* Hazır butonu — sağ taraf, dar */}
           <button
             onClick={onSubmitReady}
-            className="w-full rounded-[10px] text-base font-medium transition-colors"
+            className="rounded-[10px] text-base font-medium transition-colors flex-shrink-0"
             style={{
-              minHeight: '52px',
+              height: '52px',
+              paddingLeft: '20px',
+              paddingRight: '20px',
               backgroundColor: submitReady ? 'var(--color-surface-alt)' : 'var(--color-accent)',
               color: submitReady ? 'var(--color-text-secondary)' : 'white',
               border: submitReady ? '1px solid var(--color-border)' : 'none',
