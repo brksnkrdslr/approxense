@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { getOrCreatePlayerId, getOrCreateDisplayName, getPlayerColor } from '@/lib/utils';
+import { getOrCreatePlayerId, getOrCreateDisplayName, getPlayerColor, savePlayerColor, PLAYER_COLORS } from '@/lib/utils';
 import Lobby from '@/components/game/Lobby';
 import QuestionCard from '@/components/game/QuestionCard';
 import RevealScreen from '@/components/game/RevealScreen';
@@ -34,6 +34,17 @@ export default function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const router = useRouter();
   const playerId = useRef(getOrCreatePlayerId());
+
+  // Nickname overlay — sadece daha önce özelleştirilmemiş kullanıcılara göster
+  const [showNickname, setShowNickname] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const saved = localStorage.getItem('approxense_display_name');
+    return !saved || saved.startsWith('Misafir');
+  });
+  const [nickInput, setNickInput] = useState('');
+  const [nickColor, setNickColor] = useState(() =>
+    typeof window !== 'undefined' ? getPlayerColor() : PLAYER_COLORS[0]
+  );
 
   const [phase, setPhase] = useState<RoomPhase>('lobby');
   const [players, setPlayers] = useState<LobbyPlayer[]>([]);
@@ -411,6 +422,80 @@ export default function RoomPage() {
   }
 
   const cumulativeScore = rounds.reduce((s, r) => s + r.finalScore, 0);
+
+  if (showNickname) {
+    return (
+      <div className="h-full flex flex-col justify-center px-5 gap-5" style={{ backgroundColor: 'var(--color-bg)' }}>
+        <div>
+          <h2 className="text-2xl font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>Takma Ad</h2>
+          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Diğer oyuncular seni böyle görecek</p>
+        </div>
+
+        <div className="flex gap-2">
+          <input
+            autoFocus
+            type="text"
+            value={nickInput}
+            onChange={(e) => setNickInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                if (nickInput.trim()) localStorage.setItem('approxense_display_name', nickInput.trim());
+                savePlayerColor(nickColor);
+                setMyDisplayName(nickInput.trim() || getOrCreateDisplayName());
+                setShowNickname(false);
+              }
+            }}
+            placeholder="Takma adın (isteğe bağlı)"
+            maxLength={20}
+            className="flex-1 rounded-[12px] border px-4 text-base outline-none"
+            style={{ height: '52px', backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
+          />
+          <button
+            onClick={() => {
+              const idx = PLAYER_COLORS.indexOf(nickColor);
+              setNickColor(PLAYER_COLORS[(idx + 1) % PLAYER_COLORS.length]);
+            }}
+            className="rounded-[12px] flex-shrink-0"
+            style={{ width: '52px', height: '52px', backgroundColor: nickColor, boxShadow: `0 0 0 3px var(--color-bg), 0 0 0 5px ${nickColor}` }}
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          {PLAYER_COLORS.map((color) => (
+            <button
+              key={color}
+              onClick={() => setNickColor(color)}
+              className="rounded-full"
+              style={{
+                width: '32px', height: '32px', backgroundColor: color,
+                outline: nickColor === color ? `3px solid ${color}` : 'none',
+                outlineOffset: '2px',
+                transform: nickColor === color ? 'scale(1.2)' : 'scale(1)',
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="rounded-[12px] border px-4 py-3 flex items-center gap-2" style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+          <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Önizleme:</span>
+          <span className="text-sm font-bold" style={{ color: nickColor }}>{nickInput.trim() || 'Takma Adın'}</span>
+        </div>
+
+        <button
+          onClick={() => {
+            if (nickInput.trim()) localStorage.setItem('approxense_display_name', nickInput.trim());
+            savePlayerColor(nickColor);
+            setMyDisplayName(nickInput.trim() || getOrCreateDisplayName());
+            setShowNickname(false);
+          }}
+          className="w-full rounded-[12px] text-base font-medium"
+          style={{ height: '52px', backgroundColor: 'var(--color-accent)', color: 'white' }}
+        >
+          Odaya Gir
+        </button>
+      </div>
+    );
+  }
 
   if (phase === 'lobby') {
     return (
