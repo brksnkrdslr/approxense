@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getPlayerHue, hueToColor, savePlayerHue } from '@/lib/utils';
 import { getSettings, saveSettings } from '@/lib/questions';
 import { GameSettings, DEFAULT_SETTINGS } from '@/types';
+import SettingsPanel from '@/components/game/SettingsPanel';
 
 type Step = 'mode' | 'single-settings' | 'multi-nickname';
 
