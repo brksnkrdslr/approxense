@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Approxense — Puan / Tahmin Grafiği</title>
+<style>
+  body { margin: 0; background: #FAFAF9; font-family: 'DM Sans', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 20px; padding: 24px; box-sizing: border-box; }
+  h2 { color: #1C1917; font-size: 1.2rem; font-weight: 600; margin: 0; }
+  .subtitle { color: #78716C; font-size: 0.85rem; margin: -12px 0 0; text-align: center; }
+  .charts { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+  .chart-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .chart-label { font-size: 0.78rem; color: #78716C; font-weight: 500; }
+  canvas { border-radius: 14px; border: 1px solid #E7E5E4; background: white; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .legend { display: flex; gap: 20px; font-size: 0.78rem; color: #78716C; flex-wrap: wrap; justify-content: center; }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .note { font-size: 0.78rem; color: #A8A29E; text-align: center; max-width: 640px; line-height: 1.6; }
+</style>
+</head>
+<body>
+<h2>Puan / Tahmin Grafiği</h2>
+<p class="subtitle">Doğru cevap: 1.000.000 — ikisi de aynı formül, sadece x ekseni farklı</p>
+
+<div class="charts">
+  <div class="chart-wrap">
+    <div class="chart-label">Log ölçek (eşit aralıklar = 10× kat)</div>
+    <canvas id="log" width="360" height="280"></canvas>
+  </div>
+  <div class="chart-wrap">
+    <div class="chart-label">Doğrusal ölçek (eşit aralıklar = +1M)</div>
+    <canvas id="linear" width="360" height="280"></canvas>
+  </div>
+</div>
+
+<div class="legend">
+  <span><div class="dot" style="background:#0EA5E9"></div> Puan (0–10)</span>
+  <span><div class="dot" style="background:#10B981"></div> Doğru cevap (1.000.000)</span>
+  <span><div class="dot" style="background:#E7E5E4; border: 1px solid #ccc"></div> Sıfır sınırı</span>
+</div>
+
+<p class="note">
+  Doğrusal ölçekte eğri çarpık görünür: solda (küçük tahminler) puan çok hızlı düşer, sağda (büyük tahminler) yavaş düşer.<br>
+  Bu yüzden oyunda log ölçek kullanılır — her 10× uzaklık aynı cezayı verir.
+</p>
+
+<script>
+const ACTUAL = 1_000_000;
+
+function score(guess) {
+  if (guess <= 0) return 0;
+  const logDiff = Math.abs(Math.log10(guess / ACTUAL));
+  return Math.max(0, (1 - logDiff / 2) * 10);
+}
+
+function drawChart(id, xMin, xMax, toX, xLabels) {
+  const canvas = document.getElementById(id);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const PAD = { top: 24, right: 20, bottom: 48, left: 44 };
+  const cw = W - PAD.left - PAD.right;
+  const ch = H - PAD.top - PAD.bottom;
+
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, W, H);
+
+  function xc(x) { return PAD.left + ((toX(x) - toX(xMin)) / (toX(xMax) - toX(xMin))) * cw; }
+  function yc(s) { return PAD.top + ch - (s / 10) * ch; }
+
+  // Grid
+  ctx.strokeStyle = '#F5F5F4';
+  ctx.lineWidth = 1;
+  for (let s = 0; s <= 10; s += 2) {
+    const y = yc(s);
+    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(W - PAD.right, y); ctx.stroke();
+  }
+  xLabels.forEach(({ val }) => {
+    const x = xc(val);
+    ctx.beginPath(); ctx.moveTo(x, PAD.top); ctx.lineTo(x, H - PAD.bottom); ctx.stroke();
+  });
+
+  // Sıfır sınırı (×100 ve ÷100)
+  ctx.strokeStyle = '#E7E5E4';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 3]);
+  [ACTUAL / 100, ACTUAL * 100].forEach(v => {
+    if (v >= xMin && v <= xMax) {
+      const x = xc(v);
+      ctx.beginPath(); ctx.moveTo(x, PAD.top); ctx.lineTo(x, H - PAD.bottom); ctx.stroke();
+    }
+  });
+  ctx.setLineDash([]);
+
+  // Eğri dolgu
+  const steps = 600;
+  ctx.beginPath();
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const raw = xMin + t * (xMax - xMin); // linear interpolation in display space
+    const guess = id === 'log'
+      ? Math.pow(10, Math.log10(xMin) + t * (Math.log10(xMax) - Math.log10(xMin)))
+      : raw;
+    const s = score(guess);
+    const x = id === 'log' ? xc(guess) : PAD.left + t * cw;
+    const y = yc(s);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W - PAD.right, yc(0));
+  ctx.lineTo(PAD.left, yc(0));
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(14,165,233,0.08)';
+  ctx.fill();
+
+  // Eğri çizgi
+  ctx.beginPath();
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const guess = id === 'log'
+      ? Math.pow(10, Math.log10(xMin) + t * (Math.log10(xMax) - Math.log10(xMin)))
+      : xMin + t * (xMax - xMin);
+    const s = score(guess);
+    const x = PAD.left + t * cw;
+    const y = yc(s);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = '#0EA5E9';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Doğru cevap çizgisi
+  const cx0 = xc(ACTUAL);
+  ctx.beginPath();
+  ctx.moveTo(cx0, PAD.top);
+  ctx.lineTo(cx0, H - PAD.bottom);
+  ctx.strokeStyle = '#10B981';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 3]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.arc(cx0, yc(10), 5, 0, Math.PI * 2);
+  ctx.fillStyle = '#10B981';
+  ctx.fill();
+
+  // Y ekseni
+  ctx.fillStyle = '#A8A29E';
+  ctx.font = '10px sans-serif';
+  ctx.textAlign = 'right';
+  for (let s = 0; s <= 10; s += 2) {
+    ctx.fillText(s, PAD.left - 6, yc(s) + 3);
+  }
+
+  // X ekseni
+  ctx.textAlign = 'center';
+  xLabels.forEach(({ val, label, sub }) => {
+    const x = xc(val);
+    ctx.fillStyle = val === ACTUAL ? '#10B981' : '#A8A29E';
+    ctx.font = '10px sans-serif';
+    ctx.fillText(label, x, H - PAD.bottom + 14);
+    if (sub) {
+      ctx.fillStyle = '#C4BEB8';
+      ctx.font = '9px sans-serif';
+      ctx.fillText(sub, x, H - PAD.bottom + 26);
+    }
+  });
+
+  // Eksen başlığı
+  ctx.fillStyle = '#A8A29E';
+  ctx.font = '10px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Tahmin', W / 2, H - 4);
+  ctx.save();
+  ctx.translate(11, H / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('Puan', 0, 0);
+  ctx.restore();
+}
+
+// Log grafik
+drawChart('log',
+  1_000, 1_000_000_000,
+  x => Math.log10(x),
+  [
+    { val: 10_000,       label: '÷100',   sub: '10K' },
+    { val: 100_000,      label: '÷10',    sub: '100K' },
+    { val: 1_000_000,    label: '= Doğru', sub: '1M' },
+    { val: 10_000_000,   label: '×10',    sub: '10M' },
+    { val: 100_000_000,  label: '×100',   sub: '100M' },
+  ]
+);
+
+// Doğrusal grafik — 0 to 10M
+drawChart('linear',
+  0, 105_000_000,
+  x => x,
+  [
+    { val: 10_000,       label: '÷100',  sub: '10K' },
+    { val: 1_000_000,    label: '1M ✓',  sub: 'Doğru' },
+    { val: 10_000_000,   label: '×10',   sub: '10M' },
+    { val: 50_000_000,   label: '×50',   sub: '50M' },
+    { val: 100_000_000,  label: '×100',  sub: '100M' },
+  ]
+);
+</script>
+</body>
+</html>
