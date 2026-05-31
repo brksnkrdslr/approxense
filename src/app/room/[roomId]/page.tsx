@@ -91,13 +91,13 @@ export default function RoomPage() {
     setJoinUrl(`${window.location.origin}/room/${roomId}`);
   }, [roomId]);
 
-  // Tüm room page'de scroll kapalı
+  // Sadece oyun sırasında (playing/reveal/countdown) scroll kilitli
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (phase !== 'playing' && phase !== 'reveal' && phase !== 'countdown') return;
     const prevent = (e: TouchEvent) => e.preventDefault();
     document.addEventListener('touchmove', prevent, { passive: false });
     return () => document.removeEventListener('touchmove', prevent);
-  }, []);
+  }, [phase]);
 
   useEffect(() => {
     const pid = playerId.current;
