@@ -31,7 +31,7 @@ export default function PlayPage() {
   }
 
   return (
-    <div className="h-full flex flex-col px-5 pt-6 pb-8 overflow-y-auto" style={{ backgroundColor: 'var(--color-bg)' }}>
+    <div className="h-full flex flex-col px-5 pt-6 pb-8 overflow-hidden" style={{ backgroundColor: 'var(--color-bg)' }}>
       <button onClick={() => router.push('/')} className="self-start text-sm px-2 py-1 rounded-lg mb-6" style={{ color: 'var(--color-text-muted)' }}>
         ← Geri
       </button>

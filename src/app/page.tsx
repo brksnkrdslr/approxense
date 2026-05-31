@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default function LandingPage() {
   return (
     <div
-      className="h-full flex flex-col items-center justify-center px-5"
+      className="h-full flex flex-col items-center justify-center px-5 overflow-hidden"
       style={{ backgroundColor: 'var(--color-bg)' }}
     >
       <div className="flex flex-col items-center gap-12 w-full">
