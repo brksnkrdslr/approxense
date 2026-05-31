@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ScoreDisplay from '@/components/game/ScoreDisplay';
+import Button from '@/components/ui/Button';
 import { RoundScore } from '@/types';
 import { getSettings } from '@/lib/questions';
 
@@ -35,21 +36,8 @@ export default function ResultPage() {
     <div className="h-full px-5 pt-6 pb-6 overflow-y-auto flex flex-col gap-4" style={{ backgroundColor: 'var(--color-bg)' }}>
       <ScoreDisplay totalScore={totalScore} rounds={rounds} />
 
-      <button
-        onClick={handlePlayAgain}
-        className="w-full rounded-[12px] text-base font-medium"
-        style={{ height: '52px', backgroundColor: 'var(--color-accent)', color: 'white' }}
-      >
-        Tekrar Oyna
-      </button>
-
-      <button
-        onClick={() => router.push('/')}
-        className="w-full rounded-[12px] text-base font-medium border"
-        style={{ height: '52px', backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
-      >
-        Ana Sayfa
-      </button>
+      <Button onClick={handlePlayAgain}>Tekrar Oyna</Button>
+      <Button variant="secondary" onClick={() => router.push('/')}>Ana Sayfa</Button>
     </div>
   );
 }
