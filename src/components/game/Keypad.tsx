@@ -79,10 +79,10 @@ export default function Keypad({
       style={{ backgroundColor: 'var(--color-surface)', borderTop: '1px solid var(--color-border)' }}
     >
       {showHazir && (
-        <div className="px-3 pt-3 flex items-center gap-3">
-          {/* Geri sayım — sol taraf */}
+        <div className="relative flex items-center justify-end px-3 pt-3" style={{ minHeight: '68px' }}>
+          {/* Geri sayım — ekranın tam ortasında, absolute */}
           <div
-            className="flex-1 flex items-center justify-center font-mono font-bold tabular-nums"
+            className="absolute inset-x-0 flex items-center justify-center pointer-events-none font-mono font-bold tabular-nums"
             style={{
               fontSize: isUrgent ? '3rem' : '2.25rem',
               color: isUrgent ? 'var(--color-danger)' : 'var(--color-text-primary)',
@@ -92,14 +92,13 @@ export default function Keypad({
           >
             {timeLeft ?? ''}
           </div>
-          {/* Hazır butonu — sağ taraf, dar */}
+          {/* Hazır butonu — sağda, 1 key genişliğinde */}
           <button
             onClick={onSubmitReady}
-            className="rounded-[10px] text-base font-medium transition-colors flex-shrink-0"
+            className="relative rounded-[10px] text-base font-medium transition-colors"
             style={{
-              height: '52px',
-              paddingLeft: '20px',
-              paddingRight: '20px',
+              width: 'calc((100% - 16px) / 3)',
+              height: '64px',
               backgroundColor: submitReady ? 'var(--color-surface-alt)' : 'var(--color-accent)',
               color: submitReady ? 'var(--color-text-secondary)' : 'white',
               border: submitReady ? '1px solid var(--color-border)' : 'none',
