@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { getPlayerHue, hueToColor, savePlayerHue } from '@/lib/utils';
 import { getSettings, saveSettings } from '@/lib/questions';
 import { GameSettings, DEFAULT_SETTINGS } from '@/types';
-import SettingsPanel from '@/components/game/SettingsPanel';
 
 type Step = 'mode' | 'single-settings' | 'multi-nickname';
 
@@ -101,11 +100,6 @@ export default function PlayPage() {
             className="w-full h-3 rounded-full cursor-pointer appearance-none"
             style={{ background: 'linear-gradient(to right, hsl(0,90%,55%), hsl(30,90%,55%), hsl(60,90%,55%), hsl(90,90%,55%), hsl(120,90%,55%), hsl(150,90%,55%), hsl(180,90%,55%), hsl(210,90%,55%), hsl(240,90%,55%), hsl(270,90%,55%), hsl(300,90%,55%), hsl(330,90%,55%), hsl(359,90%,55%))' }}
           />
-        </div>
-
-        <div className="border-t pt-6 mb-6" style={{ borderColor: 'var(--color-border)' }}>
-          <h3 className="text-base font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>Ayarlar</h3>
-          <SettingsPanel settings={settings} onChange={setSettings} />
         </div>
 
         <button
