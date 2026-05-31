@@ -151,7 +151,7 @@ export default function GamePage() {
             </button>
             <Timer
               key={`${session.sessionId}-${round}`}
-              duration={20}
+              duration={30}
               onExpire={() => submitGuess(inputValue)}
             />
           </div>

@@ -467,7 +467,7 @@ export default function RoomPage() {
           </button>
           <Timer
             key={`${sessionId}-${round}`}
-            duration={20}
+            duration={30}
             onExpire={() => submitGuess(inputValue)}
           />
         </div>
