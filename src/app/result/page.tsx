@@ -34,17 +34,11 @@ export default function ResultPage() {
 
   return (
     <div
-      className="h-full px-5 pt-6 pb-28 overflow-y-auto"
-      style={{ backgroundColor: 'var(--color-bg)', position: 'relative' }}
+      className="h-full px-5 pt-6 pb-6 overflow-y-auto flex flex-col gap-4"
+      style={{ backgroundColor: 'var(--color-bg)' }}
     >
       <ScoreDisplay totalScore={totalScore} rounds={rounds} />
-
-      <div
-        className="absolute bottom-0 left-0 right-0 p-4"
-        style={{ backgroundColor: 'var(--color-bg)' }}
-      >
-        <Button onClick={handlePlayAgain}>Tekrar Oyna</Button>
-      </div>
+      <Button onClick={handlePlayAgain}>Tekrar Oyna</Button>
     </div>
   );
 }
