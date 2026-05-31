@@ -40,7 +40,7 @@ export async function POST(
 
   const { data: questions } = await supabase
     .from('questions')
-    .select('*')
+    .select('id, category, question_text, answer, unit, language, active')
     .eq('active', true);
 
   if (!questions) {

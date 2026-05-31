@@ -22,62 +22,71 @@ export async function POST(req: NextRequest) {
   const { sessionId, questionId, playerId, guessedValue, timeRemaining } = parsed.data;
   const supabase = createClient();
 
-  const { data: question } = await supabase
-    .from('questions')
-    .select('answer, unit')
-    .eq('id', questionId)
-    .single();
+  // Paralel: soru çek + percentile için answers tablosundan say
+  const [questionResult, totalResult, belowResult] = await Promise.all([
+    supabase
+      .from('questions')
+      .select('answer, unit')
+      .eq('id', questionId)
+      .single(),
 
-  if (!question) {
+    // Toplam cevap sayısı
+    supabase
+      .from('answers')
+      .select('*', { count: 'exact', head: true })
+      .eq('question_id', questionId)
+      .not('guessed_value', 'is', null),
+
+    // Guess'e eşit veya altındaki cevap sayısı (percentile için)
+    guessedValue !== null
+      ? supabase
+          .from('answers')
+          .select('*', { count: 'exact', head: true })
+          .eq('question_id', questionId)
+          .not('guessed_value', 'is', null)
+          .lte('guessed_value', guessedValue)
+      : Promise.resolve({ count: 0, error: null }),
+  ]);
+
+  if (!questionResult.data) {
     return NextResponse.json({ error: 'Question not found' }, { status: 404 });
   }
 
-  let stats = { answer_count: 0, answers: [] as number[] };
-  const { data: existingStats } = await supabase
-    .from('question_stats')
-    .select('answer_count, answers')
-    .eq('question_id', questionId)
-    .single();
-
-  if (existingStats) {
-    stats = existingStats;
-  }
+  const totalAnswerCount = totalResult.count ?? 0;
+  const belowOrEqualCount = belowResult.count ?? 0;
 
   const { logScore, percentileScore, wValue, finalScore } = computeScore(
     guessedValue,
-    question.answer,
-    stats.answers,
-    stats.answer_count
+    questionResult.data.answer,
+    belowOrEqualCount,
+    totalAnswerCount
   );
 
-  await supabase.from('answers').insert({
-    session_id: sessionId,
-    question_id: questionId,
-    player_id: playerId,
-    guessed_value: guessedValue,
-    log_score: logScore,
-    percentile_score: percentileScore,
-    w_value: wValue,
-    final_score: finalScore,
-    time_remaining: timeRemaining,
-  });
-
-  if (guessedValue !== null) {
-    const newAnswers = [...stats.answers, guessedValue].slice(-10000);
-    await supabase.from('question_stats').upsert({
+  // Paralel: cevabı kaydet + stats counter'ı atomik artır
+  await Promise.all([
+    supabase.from('answers').insert({
+      session_id: sessionId,
       question_id: questionId,
-      answer_count: stats.answer_count + 1,
-      answers: newAnswers,
-      updated_at: new Date().toISOString(),
-    });
-  }
+      player_id: playerId,
+      guessed_value: guessedValue,
+      log_score: logScore,
+      percentile_score: percentileScore,
+      w_value: wValue,
+      final_score: finalScore,
+      time_remaining: timeRemaining,
+    }),
+
+    guessedValue !== null
+      ? supabase.rpc('increment_answer_count', { qid: questionId })
+      : Promise.resolve(null),
+  ]);
 
   return NextResponse.json({
     logScore,
     percentileScore,
     wValue,
     finalScore,
-    actualAnswer: question.answer,
-    unit: question.unit,
+    actualAnswer: questionResult.data.answer,
+    unit: questionResult.data.unit,
   });
 }

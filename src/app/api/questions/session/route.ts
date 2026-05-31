@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
 
   const { data: questions, error } = await supabase
     .from('questions')
-    .select('*')
+    .select('id, category, question_text, answer, unit, language, active')
     .eq('active', true);
 
   if (error || !questions) {
