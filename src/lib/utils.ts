@@ -26,26 +26,49 @@ export function saveDisplayName(name: string): void {
 }
 
 export const PLAYER_COLORS = [
-  '#6366f1', // indigo
-  '#f59e0b', // amber
-  '#10b981', // emerald
-  '#ef4444', // red
-  '#3b82f6', // blue
-  '#ec4899', // pink
-  '#8b5cf6', // violet
-  '#14b8a6', // teal
-  '#f97316', // orange
-  '#84cc16', // lime
+  '#6366f1', '#f59e0b', '#10b981', '#ef4444',
+  '#3b82f6', '#ec4899', '#8b5cf6', '#14b8a6',
 ];
 
+export function hueToColor(hue: number): string {
+  // HSL → hex: saturation 90%, lightness 55% — canlı ama göze batmayan
+  const s = 0.9, l = 0.55;
+  const h = hue / 360;
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  const toC = (t: number) => {
+    if (t < 0) t += 1; if (t > 1) t -= 1;
+    if (t < 1/6) return p + (q - p) * 6 * t;
+    if (t < 1/2) return q;
+    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+    return p;
+  };
+  const r = Math.round(toC(h + 1/3) * 255);
+  const g = Math.round(toC(h) * 255);
+  const b = Math.round(toC(h - 1/3) * 255);
+  return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+}
+
 export function getPlayerColor(): string {
-  if (typeof window === 'undefined') return PLAYER_COLORS[0];
-  return localStorage.getItem('approxense_player_color') ?? PLAYER_COLORS[0];
+  if (typeof window === 'undefined') return hueToColor(240);
+  const hue = localStorage.getItem('approxense_player_hue');
+  return hue ? hueToColor(Number(hue)) : hueToColor(240);
+}
+
+export function getPlayerHue(): number {
+  if (typeof window === 'undefined') return 240;
+  return Number(localStorage.getItem('approxense_player_hue') ?? 240);
 }
 
 export function savePlayerColor(color: string): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem('approxense_player_color', color);
+}
+
+export function savePlayerHue(hue: number): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('approxense_player_hue', String(hue));
+  localStorage.setItem('approxense_player_color', hueToColor(hue));
 }
 
 export function getOrCreatePlayerId(): string {

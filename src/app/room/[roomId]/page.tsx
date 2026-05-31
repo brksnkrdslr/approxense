@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { getOrCreatePlayerId, getOrCreateDisplayName, getPlayerColor, savePlayerColor, PLAYER_COLORS } from '@/lib/utils';
+import { getOrCreatePlayerId, getOrCreateDisplayName, getPlayerColor, getPlayerHue, hueToColor, savePlayerHue } from '@/lib/utils';
 import Lobby from '@/components/game/Lobby';
 import QuestionCard from '@/components/game/QuestionCard';
 import RevealScreen from '@/components/game/RevealScreen';
@@ -42,8 +42,8 @@ export default function RoomPage() {
     return !saved || saved.startsWith('Misafir');
   });
   const [nickInput, setNickInput] = useState('');
-  const [nickColor, setNickColor] = useState(() =>
-    typeof window !== 'undefined' ? getPlayerColor() : PLAYER_COLORS[0]
+  const [nickHue, setNickHue] = useState(() =>
+    typeof window !== 'undefined' ? getPlayerHue() : 240
   );
 
   const [phase, setPhase] = useState<RoomPhase>('lobby');
@@ -424,6 +424,13 @@ export default function RoomPage() {
   const cumulativeScore = rounds.reduce((s, r) => s + r.finalScore, 0);
 
   if (showNickname) {
+    const nickColor = hueToColor(nickHue);
+    const confirmNickname = () => {
+      if (nickInput.trim()) localStorage.setItem('approxense_display_name', nickInput.trim());
+      savePlayerHue(nickHue);
+      setMyDisplayName(nickInput.trim() || getOrCreateDisplayName());
+      setShowNickname(false);
+    };
     return (
       <div className="h-full flex flex-col justify-center px-5 gap-5" style={{ backgroundColor: 'var(--color-bg)' }}>
         <div>
@@ -431,63 +438,32 @@ export default function RoomPage() {
           <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Diğer oyuncular seni böyle görecek</p>
         </div>
 
-        <div className="flex gap-2">
-          <input
-            autoFocus
-            type="text"
-            value={nickInput}
-            onChange={(e) => setNickInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                if (nickInput.trim()) localStorage.setItem('approxense_display_name', nickInput.trim());
-                savePlayerColor(nickColor);
-                setMyDisplayName(nickInput.trim() || getOrCreateDisplayName());
-                setShowNickname(false);
-              }
-            }}
-            placeholder="Takma adın (isteğe bağlı)"
-            maxLength={20}
-            className="flex-1 rounded-[12px] border px-4 text-base outline-none"
-            style={{ height: '52px', backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
-          />
-          <button
-            onClick={() => {
-              const idx = PLAYER_COLORS.indexOf(nickColor);
-              setNickColor(PLAYER_COLORS[(idx + 1) % PLAYER_COLORS.length]);
-            }}
-            className="rounded-[12px] flex-shrink-0"
-            style={{ width: '52px', height: '52px', backgroundColor: nickColor, boxShadow: `0 0 0 3px var(--color-bg), 0 0 0 5px ${nickColor}` }}
-          />
-        </div>
+        <input
+          autoFocus
+          type="text"
+          value={nickInput}
+          onChange={(e) => setNickInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && confirmNickname()}
+          placeholder="Takma adın (isteğe bağlı)"
+          maxLength={20}
+          className="w-full rounded-[12px] border px-4 text-base font-bold outline-none"
+          style={{ height: '52px', backgroundColor: 'var(--color-surface)', borderColor: nickColor, color: nickColor }}
+        />
 
-        <div className="flex flex-wrap gap-3">
-          {PLAYER_COLORS.map((color) => (
-            <button
-              key={color}
-              onClick={() => setNickColor(color)}
-              className="rounded-full"
-              style={{
-                width: '32px', height: '32px', backgroundColor: color,
-                outline: nickColor === color ? `3px solid ${color}` : 'none',
-                outlineOffset: '2px',
-                transform: nickColor === color ? 'scale(1.2)' : 'scale(1)',
-              }}
-            />
-          ))}
-        </div>
-
-        <div className="rounded-[12px] border px-4 py-3 flex items-center gap-2" style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-          <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Önizleme:</span>
-          <span className="text-sm font-bold" style={{ color: nickColor }}>{nickInput.trim() || 'Takma Adın'}</span>
-        </div>
+        <input
+          type="range"
+          min={0}
+          max={359}
+          value={nickHue}
+          onChange={(e) => setNickHue(Number(e.target.value))}
+          className="w-full h-3 rounded-full cursor-pointer appearance-none"
+          style={{
+            background: 'linear-gradient(to right, hsl(0,90%,55%), hsl(30,90%,55%), hsl(60,90%,55%), hsl(90,90%,55%), hsl(120,90%,55%), hsl(150,90%,55%), hsl(180,90%,55%), hsl(210,90%,55%), hsl(240,90%,55%), hsl(270,90%,55%), hsl(300,90%,55%), hsl(330,90%,55%), hsl(359,90%,55%))',
+          }}
+        />
 
         <button
-          onClick={() => {
-            if (nickInput.trim()) localStorage.setItem('approxense_display_name', nickInput.trim());
-            savePlayerColor(nickColor);
-            setMyDisplayName(nickInput.trim() || getOrCreateDisplayName());
-            setShowNickname(false);
-          }}
+          onClick={confirmNickname}
           className="w-full rounded-[12px] text-base font-medium"
           style={{ height: '52px', backgroundColor: 'var(--color-accent)', color: 'white' }}
         >

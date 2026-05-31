@@ -3,20 +3,20 @@
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { PLAYER_COLORS, getPlayerColor, savePlayerColor } from '@/lib/utils';
+import { getPlayerHue, hueToColor, savePlayerHue } from '@/lib/utils';
 
 export default function PlayPage() {
   const router = useRouter();
   const [showNickname, setShowNickname] = useState(false);
   const [nickname, setNickname] = useState('');
-  const [selectedColor, setSelectedColor] = useState(PLAYER_COLORS[0]);
+  const [hue, setHue] = useState(240);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('approxense_display_name');
       if (saved && !saved.startsWith('Misafir')) setNickname(saved);
-      setSelectedColor(getPlayerColor());
+      setHue(getPlayerHue());
     }
   }, []);
 
@@ -24,10 +24,12 @@ export default function PlayPage() {
     if (showNickname) setTimeout(() => inputRef.current?.focus(), 50);
   }, [showNickname]);
 
+  const color = hueToColor(hue);
+
   function handleStart() {
     const trimmed = nickname.trim();
     if (trimmed) localStorage.setItem('approxense_display_name', trimmed);
-    savePlayerColor(selectedColor);
+    savePlayerHue(hue);
     router.push('/room/new');
   }
 
@@ -51,71 +53,37 @@ export default function PlayPage() {
           </p>
         </div>
 
-        {/* Input + renk kutusu yan yana */}
-        <div className="flex gap-2">
+        {/* Input — yazı rengi seçilen renkle realtime değişir */}
+        <input
+          ref={inputRef}
+          type="text"
+          value={nickname}
+          onChange={(e) => setNickname(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleStart()}
+          placeholder="Takma adın (isteğe bağlı)"
+          maxLength={20}
+          className="w-full rounded-[12px] border px-4 text-base font-bold outline-none"
+          style={{
+            height: '52px',
+            backgroundColor: 'var(--color-surface)',
+            borderColor: color,
+            color: color,
+          }}
+        />
+
+        {/* Hue slider */}
+        <div className="flex flex-col gap-2">
           <input
-            ref={inputRef}
-            type="text"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleStart()}
-            placeholder="Takma adın (isteğe bağlı)"
-            maxLength={20}
-            className="flex-1 rounded-[12px] border px-4 text-base outline-none"
+            type="range"
+            min={0}
+            max={359}
+            value={hue}
+            onChange={(e) => setHue(Number(e.target.value))}
+            className="w-full h-3 rounded-full cursor-pointer appearance-none"
             style={{
-              height: '52px',
-              backgroundColor: 'var(--color-surface)',
-              borderColor: 'var(--color-border)',
-              color: 'var(--color-text-primary)',
+              background: 'linear-gradient(to right, hsl(0,90%,55%), hsl(30,90%,55%), hsl(60,90%,55%), hsl(90,90%,55%), hsl(120,90%,55%), hsl(150,90%,55%), hsl(180,90%,55%), hsl(210,90%,55%), hsl(240,90%,55%), hsl(270,90%,55%), hsl(300,90%,55%), hsl(330,90%,55%), hsl(359,90%,55%))',
             }}
           />
-          {/* Renk kutusu — tıklanınca picker açılır */}
-          <button
-            onClick={() => {
-              const idx = PLAYER_COLORS.indexOf(selectedColor);
-              const next = PLAYER_COLORS[(idx + 1) % PLAYER_COLORS.length];
-              setSelectedColor(next);
-            }}
-            className="rounded-[12px] border flex-shrink-0 relative"
-            style={{
-              width: '52px',
-              height: '52px',
-              backgroundColor: selectedColor,
-              borderColor: 'transparent',
-              boxShadow: `0 0 0 3px var(--color-bg), 0 0 0 5px ${selectedColor}`,
-            }}
-            title="Renk seç"
-          />
-        </div>
-
-        {/* Renk paleti */}
-        <div className="flex flex-wrap gap-3">
-          {PLAYER_COLORS.map((color) => (
-            <button
-              key={color}
-              onClick={() => setSelectedColor(color)}
-              className="rounded-full transition-transform"
-              style={{
-                width: '32px',
-                height: '32px',
-                backgroundColor: color,
-                outline: selectedColor === color ? `3px solid ${color}` : 'none',
-                outlineOffset: '2px',
-                transform: selectedColor === color ? 'scale(1.2)' : 'scale(1)',
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Önizleme */}
-        <div
-          className="rounded-[12px] border px-4 py-3 flex items-center gap-2"
-          style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-        >
-          <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Önizleme:</span>
-          <span className="text-sm font-bold" style={{ color: selectedColor }}>
-            {nickname.trim() || 'Takma Adın'}
-          </span>
         </div>
 
         <button
