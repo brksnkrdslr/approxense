@@ -44,7 +44,7 @@ export default function PlayPage() {
           ← Geri
         </button>
 
-        <div>
+        <div className="text-center mb-4">
           <h2 className="text-2xl font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>
             Takma Ad
           </h2>
