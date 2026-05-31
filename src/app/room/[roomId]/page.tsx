@@ -220,7 +220,7 @@ export default function RoomPage() {
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState<{ playerId: string; displayName: string }>();
         const entries = Object.values(state).flat();
-        connectedPlayersRef.current = entries.map((e) => e.playerId);
+        connectedPlayersRef.current = [...new Set(entries.map((e) => e.playerId))];
         setPlayers((prev) => {
           const map = new Map(prev.map((p) => [p.playerId, p]));
           entries.forEach((e) => {
