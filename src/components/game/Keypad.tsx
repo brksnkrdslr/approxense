@@ -1,5 +1,8 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { isMuted, setMuted } from '@/lib/sound';
+
 interface KeypadProps {
   value: string;
   onChange: (value: string) => void;
@@ -72,6 +75,14 @@ export default function Keypad({
       : 'Hazır';
 
   const isUrgent = timeLeft !== undefined && timeLeft <= 5;
+  const [muted, setMutedState] = useState(false);
+  useEffect(() => { setMutedState(isMuted()); }, []);
+
+  function toggleMute() {
+    const next = !muted;
+    setMutedState(next);
+    setMuted(next);
+  }
 
   return (
     <div
@@ -112,9 +123,32 @@ export default function Keypad({
       <div className="p-3 grid grid-rows-4 gap-2">
         {KEYS.map((row, ri) => (
           <div key={ri} className="grid grid-cols-3 gap-2">
-            {row.map((key) => (
+            {row.map((key, ci) => (
+              <div key={key} className="relative">
+                {/* Hoparlör ikonu — sadece "6" tuşunun üzerinde */}
+                {ri === 1 && ci === 2 && (
+                  <button
+                    onClick={toggleMute}
+                    className="absolute -top-2 right-1 z-10 flex items-center justify-center"
+                    style={{ width: '18px', height: '18px' }}
+                    aria-label={muted ? 'Sesi aç' : 'Sesi kapat'}
+                  >
+                    {muted ? (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-text-muted)' }}>
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                        <line x1="23" y1="9" x2="17" y2="15"/>
+                        <line x1="17" y1="9" x2="23" y2="15"/>
+                      </svg>
+                    ) : (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-text-muted)' }}>
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                      </svg>
+                    )}
+                  </button>
+                )}
               <button
-                key={key}
                 aria-label={key}
                 disabled={disabled}
                 onClick={() => handleKey(key)}
@@ -129,6 +163,7 @@ export default function Keypad({
               >
                 {key === '⌫' ? <BackspaceIcon /> : key}
               </button>
+              </div>
             ))}
           </div>
         ))}

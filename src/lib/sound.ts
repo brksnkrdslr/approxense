@@ -1,27 +1,3 @@
-export type BeepStyle = 'klasik' | 'sert' | 'yumusak' | 'ince' | 'kapali';
-
-export const BEEP_LABELS: Record<BeepStyle, string> = {
-  klasik: 'Klasik',
-  sert: 'Sert',
-  yumusak: 'Yumuşak',
-  ince: 'İnce',
-  kapali: 'Kapalı',
-};
-
-interface BeepConfig {
-  freq: number;
-  type: OscillatorType;
-  duration: number; // ms
-  gain: number;     // 0-1
-}
-
-const BEEP_CONFIGS: Record<Exclude<BeepStyle, 'kapali'>, BeepConfig> = {
-  klasik: { freq: 880,  type: 'sine',     duration: 100, gain: 0.4 },
-  sert:   { freq: 1200, type: 'square',   duration: 80,  gain: 0.3 },
-  yumusak:{ freq: 440,  type: 'sine',     duration: 160, gain: 0.35 },
-  ince:   { freq: 1800, type: 'triangle', duration: 60,  gain: 0.45 },
-};
-
 let ctx: AudioContext | null = null;
 
 function getCtx(): AudioContext | null {
@@ -31,32 +7,36 @@ function getCtx(): AudioContext | null {
   return ctx;
 }
 
-export function playBeep(style: BeepStyle): void {
-  if (style === 'kapali') return;
+function beep(freq: number, durationMs: number, gain = 0.4): void {
   const ac = getCtx();
   if (!ac) return;
-
-  const cfg = BEEP_CONFIGS[style];
   const osc = ac.createOscillator();
-  const gain = ac.createGain();
-
-  osc.type = cfg.type;
-  osc.frequency.value = cfg.freq;
-  gain.gain.setValueAtTime(cfg.gain, ac.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + cfg.duration / 1000);
-
-  osc.connect(gain);
-  gain.connect(ac.destination);
+  const g = ac.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  g.gain.setValueAtTime(gain, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + durationMs / 1000);
+  osc.connect(g);
+  g.connect(ac.destination);
   osc.start(ac.currentTime);
-  osc.stop(ac.currentTime + cfg.duration / 1000);
+  osc.stop(ac.currentTime + durationMs / 1000);
 }
 
-export function getBeepStyle(): BeepStyle {
-  if (typeof window === 'undefined') return 'klasik';
-  return (localStorage.getItem('approxense_beep') as BeepStyle) ?? 'klasik';
+export function playCountdownBeep(second: number): void {
+  if (isMuted()) return;
+  if (second >= 2) {
+    beep(880, 100); // klasik — 5,4,3,2
+  } else {
+    beep(440, 200); // oktav altı, uzun — 1
+  }
 }
 
-export function saveBeepStyle(style: BeepStyle): void {
+export function isMuted(): boolean {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem('approxense_muted') === '1';
+}
+
+export function setMuted(muted: boolean): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem('approxense_beep', style);
+  localStorage.setItem('approxense_muted', muted ? '1' : '0');
 }

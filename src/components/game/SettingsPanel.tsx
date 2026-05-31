@@ -1,8 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { GameSettings, ALL_CATEGORIES, CATEGORY_LABELS, DURATION_OPTIONS } from '@/types';
-import { BeepStyle, BEEP_LABELS, getBeepStyle, saveBeepStyle, playBeep } from '@/lib/sound';
 
 interface SettingsPanelProps {
   settings: GameSettings;
@@ -10,11 +8,7 @@ interface SettingsPanelProps {
   readonly?: boolean;
 }
 
-const BEEP_OPTIONS: BeepStyle[] = ['klasik', 'sert', 'yumusak', 'ince', 'kapali'];
-
 export default function SettingsPanel({ settings, onChange, readonly = false }: SettingsPanelProps) {
-  const [beep, setBeep] = useState<BeepStyle>('klasik');
-  useEffect(() => { setBeep(getBeepStyle()); }, []);
   function toggleCategory(cat: typeof ALL_CATEGORIES[number]) {
     if (readonly) return;
     const has = settings.categories.includes(cat);
@@ -100,35 +94,6 @@ export default function SettingsPanel({ settings, onChange, readonly = false }: 
         </div>
       </div>
 
-      {/* Bip sesi */}
-      <div>
-        <p className="text-xs font-medium uppercase tracking-widest mb-3" style={{ color: 'var(--color-text-muted)' }}>
-          Bip Sesi
-        </p>
-        <div className="grid grid-cols-3 gap-2">
-          {BEEP_OPTIONS.map((style) => {
-            const active = beep === style;
-            return (
-              <button
-                key={style}
-                onClick={() => {
-                  setBeep(style);
-                  saveBeepStyle(style);
-                  if (style !== 'kapali') playBeep(style);
-                }}
-                className="rounded-[10px] text-sm font-medium py-2"
-                style={{
-                  backgroundColor: active ? 'var(--color-accent)' : 'var(--color-surface)',
-                  color: active ? 'white' : 'var(--color-text-primary)',
-                  border: active ? 'none' : '1px solid var(--color-border)',
-                }}
-              >
-                {BEEP_LABELS[style]}
-              </button>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 }

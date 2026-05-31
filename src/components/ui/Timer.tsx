@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { playBeep, getBeepStyle } from '@/lib/sound';
+import { playCountdownBeep } from '@/lib/sound';
 
 interface TimerProps {
   duration: number;
@@ -21,12 +21,10 @@ export default function Timer({ duration, onExpire, paused = false, onTick }: Ti
   useEffect(() => {
     onTick?.(timeLeft);
     if (timeLeft > 0 && timeLeft <= 5) {
-      // Titreşim (Android)
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate(timeLeft === 1 ? [80, 40, 80] : 40);
       }
-      // Bip sesi
-      playBeep(getBeepStyle());
+      playCountdownBeep(timeLeft);
     }
   }, [timeLeft]);
 
