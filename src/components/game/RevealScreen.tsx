@@ -54,7 +54,10 @@ export default function RevealScreen({
         className="rounded-[16px] border p-5 flex flex-col gap-4"
         style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
       >
-        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+        <p className="text-xs text-center mb-1" style={{ color: 'var(--color-text-muted)' }}>
+          {round} / {total}
+        </p>
+        <p className="text-sm text-center" style={{ color: 'var(--color-text-secondary)' }}>
           {renderQuestionText(question.question_text)}
         </p>
 
@@ -118,12 +121,13 @@ export default function RevealScreen({
           className="rounded-[16px] border p-5"
           style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
         >
-          <p className="text-sm font-medium mb-3" style={{ color: 'var(--color-text-secondary)' }}>Bu Tur Cevaplar</p>
+          <p className="text-sm font-medium mb-3" style={{ color: 'var(--color-text-secondary)' }}>Tur Sıralaması</p>
           <div className="flex flex-col gap-2">
-            {roundAnswers.map((a) => {
+            {[...roundAnswers].sort((a, b) => b.finalScore - a.finalScore).map((a, i) => {
               const isMe = a.playerId === currentPlayerId;
               return (
                 <div key={a.playerId} className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-mono w-4 shrink-0" style={{ color: 'var(--color-text-muted)' }}>{i + 1}</span>
                   <span className="text-xs w-20 truncate shrink-0" style={{ color: isMe ? 'var(--color-accent)' : 'var(--color-text-secondary)' }}>
                     {a.displayName ?? 'Oyuncu'}{isMe ? ' (Sen)' : ''}
                   </span>

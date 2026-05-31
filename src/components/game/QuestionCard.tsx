@@ -24,26 +24,17 @@ function renderQuestionText(text: string) {
 export default function QuestionCard({ question, round, total, inputValue }: QuestionCardProps) {
   return (
     <div className="px-5 pt-6 pb-4">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-center mb-4">
         <span
           className="text-sm font-medium"
           style={{ color: 'var(--color-text-muted)' }}
         >
           {round} / {total}
         </span>
-        <span
-          className="text-xs px-2 py-1 rounded-full"
-          style={{
-            backgroundColor: 'var(--color-surface-alt)',
-            color: 'var(--color-text-secondary)',
-          }}
-        >
-          {question.category}
-        </span>
       </div>
 
       <p
-        className="text-xl font-medium leading-snug mb-8"
+        className="text-xl font-medium leading-snug mb-8 text-center"
         style={{ color: 'var(--color-text-primary)', fontFamily: 'var(--font-sans)' }}
       >
         {renderQuestionText(question.question_text)}
