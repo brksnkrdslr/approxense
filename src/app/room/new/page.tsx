@@ -20,7 +20,7 @@ export default function NewRoomPage() {
         const data = await res.json();
         router.replace(`/room/${data.roomId}`);
       } catch {
-        router.replace('/play');
+        router.replace('/');
       }
     }
     createRoom();

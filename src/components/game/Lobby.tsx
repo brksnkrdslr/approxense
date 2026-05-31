@@ -25,6 +25,7 @@ interface LobbyProps {
   settings: GameSettings;
   onSettingsChange: (s: GameSettings) => void;
   isHost: boolean;
+  isSolo: boolean;
 }
 
 export default function Lobby({
@@ -38,6 +39,7 @@ export default function Lobby({
   settings,
   onSettingsChange,
   isHost,
+  isSolo,
 }: LobbyProps) {
   const readyCount = players.filter((p) => p.isReady).length;
   const canStartNow = readyCount > players.length / 2;
@@ -177,7 +179,7 @@ export default function Lobby({
 
       <div className="flex flex-col gap-3">
         <Button onClick={onReady} variant={isReady ? 'secondary' : 'primary'}>
-          {isReady ? '⏳ Bekleniyor… (İptal için bas)' : 'Hazır'}
+          {isSolo ? 'Tek Başına Oyna' : isReady ? '⏳ Bekleniyor… (İptal için bas)' : 'Hazır'}
         </Button>
         {canStartNow && (
           <Button onClick={onStartNow} variant="secondary">

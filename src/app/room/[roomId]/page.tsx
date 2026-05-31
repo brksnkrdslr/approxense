@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { getOrCreatePlayerId, getOrCreateDisplayName, getPlayerColor, getPlayerHue, hueToColor, savePlayerHue } from '@/lib/utils';
-import { getSettings } from '@/lib/questions';
+import { getSettings, saveSettings } from '@/lib/questions';
 import { GameSettings, DEFAULT_SETTINGS } from '@/types';
 import SettingsPanel from '@/components/game/SettingsPanel';
 import Lobby from '@/components/game/Lobby';
@@ -325,8 +325,16 @@ export default function RoomPage() {
   }
 
   function handleReady() {
+    const isSolo = connectedPlayersRef.current.length <= 1;
+
+    if (isSolo) {
+      // Tek başına → tek oyunculu mod
+      saveSettings(roomSettings);
+      router.push('/game');
+      return;
+    }
+
     if (isReady) {
-      // İptal et
       setIsReady(false);
       channelRef.current?.send({
         type: 'broadcast',
@@ -334,7 +342,6 @@ export default function RoomPage() {
         payload: { playerId: playerId.current },
       });
     } else {
-      // Hazır ol
       setIsReady(true);
       fetch(`/api/rooms/${roomId}/ready`, {
         method: 'POST',
@@ -509,6 +516,7 @@ export default function RoomPage() {
           });
         }}
         isHost={[...connectedPlayersRef.current].sort()[0] === playerId.current || connectedPlayersRef.current.length === 0}
+        isSolo={connectedPlayersRef.current.length <= 1}
       />
       </div>
     );
