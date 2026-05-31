@@ -104,9 +104,12 @@ export default function RoomPage() {
     channelRef.current = channel;
 
     channel
-      .on('broadcast', { event: 'game_start' }, ({ payload }) => {
+      .on('broadcast', { event: 'game_start' }, async ({ payload }) => {
         setSessionId(payload.sessionId);
-        setQuestions(payload.questions);
+        const res = await fetch(`/api/game/session?id=${payload.sessionId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        setQuestions(data.questions);
         setPhase('countdown');
       })
       .on('broadcast', { event: 'restart_ready' }, ({ payload }: { payload: { playerId: string } }) => {
@@ -291,11 +294,11 @@ export default function RoomPage() {
     });
     if (!res.ok) return;
     const data = await res.json();
-    // Broadcast to ALL players (including self via channel)
+    // Broadcast sadece sessionId — her client kendi sorularını çeker
     await channelRef.current?.send({
       type: 'broadcast',
       event: 'game_start',
-      payload: { sessionId: data.sessionId, questions: data.questions },
+      payload: { sessionId: data.sessionId },
     });
   }
 
