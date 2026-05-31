@@ -103,7 +103,6 @@ export default function RoomPage() {
       .on('broadcast', { event: 'game_start' }, ({ payload }) => {
         setSessionId(payload.sessionId);
         setQuestions(payload.questions);
-        setStartCountdown(3);
         setPhase('countdown');
       })
       .on('broadcast', { event: 'restart_ready' }, ({ payload }: { payload: { playerId: string } }) => {
@@ -257,13 +256,19 @@ export default function RoomPage() {
   // 3-2-1 geri sayım
   useEffect(() => {
     if (phase !== 'countdown') return;
-    if (startCountdown <= 0) {
-      setPhase('playing');
-      return;
-    }
-    const t = setTimeout(() => setStartCountdown((n) => n - 1), 1000);
-    return () => clearTimeout(t);
-  }, [phase, startCountdown]);
+    setStartCountdown(3);
+    const interval = setInterval(() => {
+      setStartCountdown((n) => {
+        if (n <= 1) {
+          clearInterval(interval);
+          setPhase('playing');
+          return 0;
+        }
+        return n - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [phase]);
 
   // Trigger start (restart flow)
   useEffect(() => {
