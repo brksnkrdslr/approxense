@@ -444,31 +444,35 @@ export default function RoomPage() {
           value={nickInput}
           onChange={(e) => setNickInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && confirmNickname()}
-          placeholder="Takma adın (isteğe bağlı)"
+          placeholder="Takma adın"
           maxLength={20}
-          className="w-full rounded-[12px] border px-4 text-base font-bold outline-none"
-          style={{ height: '52px', backgroundColor: 'var(--color-surface)', borderColor: nickColor, color: nickColor }}
+          className="w-full text-center text-2xl font-bold outline-none bg-transparent border-none"
+          style={{ color: nickColor }}
         />
 
-        <input
-          type="range"
-          min={0}
-          max={359}
-          value={nickHue}
-          onChange={(e) => setNickHue(Number(e.target.value))}
-          className="w-full h-3 rounded-full cursor-pointer appearance-none"
-          style={{
-            background: 'linear-gradient(to right, hsl(0,90%,55%), hsl(30,90%,55%), hsl(60,90%,55%), hsl(90,90%,55%), hsl(120,90%,55%), hsl(150,90%,55%), hsl(180,90%,55%), hsl(210,90%,55%), hsl(240,90%,55%), hsl(270,90%,55%), hsl(300,90%,55%), hsl(330,90%,55%), hsl(359,90%,55%))',
-          }}
-        />
+        <div className="mt-6">
+          <input
+            type="range"
+            min={0}
+            max={359}
+            value={nickHue}
+            onChange={(e) => setNickHue(Number(e.target.value))}
+            className="w-full h-3 rounded-full cursor-pointer appearance-none"
+            style={{
+              background: 'linear-gradient(to right, hsl(0,90%,55%), hsl(30,90%,55%), hsl(60,90%,55%), hsl(90,90%,55%), hsl(120,90%,55%), hsl(150,90%,55%), hsl(180,90%,55%), hsl(210,90%,55%), hsl(240,90%,55%), hsl(270,90%,55%), hsl(300,90%,55%), hsl(330,90%,55%), hsl(359,90%,55%))',
+            }}
+          />
+        </div>
 
-        <button
-          onClick={confirmNickname}
-          className="w-full rounded-[12px] text-base font-medium"
-          style={{ height: '52px', backgroundColor: 'var(--color-accent)', color: 'white' }}
-        >
-          Odaya Gir
-        </button>
+        <div className="mt-8">
+          <button
+            onClick={confirmNickname}
+            className="w-full rounded-[12px] text-base font-medium"
+            style={{ height: '52px', backgroundColor: 'var(--color-accent)', color: 'white' }}
+          >
+            Odaya Gir
+          </button>
+        </div>
       </div>
     );
   }

@@ -53,26 +53,21 @@ export default function PlayPage() {
           </p>
         </div>
 
-        {/* Input — yazı rengi seçilen renkle realtime değişir */}
+        {/* Input — arka fon yok, yazı ortada, renk realtime */}
         <input
           ref={inputRef}
           type="text"
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleStart()}
-          placeholder="Takma adın (isteğe bağlı)"
+          placeholder="Takma adın"
           maxLength={20}
-          className="w-full rounded-[12px] border px-4 text-base font-bold outline-none"
-          style={{
-            height: '52px',
-            backgroundColor: 'var(--color-surface)',
-            borderColor: color,
-            color: color,
-          }}
+          className="w-full text-center text-2xl font-bold outline-none bg-transparent border-none"
+          style={{ color: color }}
         />
 
-        {/* Hue slider */}
-        <div className="flex flex-col gap-2">
+        {/* Hue slider — isimden boşluk */}
+        <div className="mt-6">
           <input
             type="range"
             min={0}
@@ -86,13 +81,16 @@ export default function PlayPage() {
           />
         </div>
 
-        <button
-          onClick={handleStart}
-          className="w-full rounded-[12px] text-base font-medium"
-          style={{ height: '52px', backgroundColor: 'var(--color-accent)', color: 'white' }}
-        >
-          Odaya Gir
-        </button>
+        {/* Odaya gir — sliderdan boşluk */}
+        <div className="mt-8">
+          <button
+            onClick={handleStart}
+            className="w-full rounded-[12px] text-base font-medium"
+            style={{ height: '52px', backgroundColor: 'var(--color-accent)', color: 'white' }}
+          >
+            Odaya Gir
+          </button>
+        </div>
       </div>
     );
   }
