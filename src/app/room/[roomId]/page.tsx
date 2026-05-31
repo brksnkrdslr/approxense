@@ -271,7 +271,9 @@ export default function RoomPage() {
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          await channel.track({ playerId: pid, displayName: myName, color: getPlayerColor() });
+          // nickname overlay gösteriliyorsa track'i ertele — confirmNickname'de yapılacak
+          const currentName = localStorage.getItem('approxense_display_name') || myName;
+          await channel.track({ playerId: pid, displayName: currentName, color: getPlayerColor() });
         }
       });
 
@@ -445,10 +447,17 @@ export default function RoomPage() {
   if (showNickname) {
     const nickColor = hueToColor(nickHue);
     const confirmNickname = () => {
+      const newName = nickInput.trim() || getOrCreateDisplayName();
       if (nickInput.trim()) localStorage.setItem('approxense_display_name', nickInput.trim());
       savePlayerHue(nickHue);
-      setMyDisplayName(nickInput.trim() || getOrCreateDisplayName());
+      setMyDisplayName(newName);
       setShowNickname(false);
+      // Kanala yeni isim ve renk ile yeniden track et
+      channelRef.current?.track({
+        playerId: playerId.current,
+        displayName: newName,
+        color: hueToColor(nickHue),
+      });
     };
     return (
       <div className="h-full flex flex-col justify-center px-5 gap-5" style={{ backgroundColor: 'var(--color-bg)' }}>
