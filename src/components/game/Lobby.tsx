@@ -95,9 +95,13 @@ export default function Lobby({
   return (
     <div className="px-5 pt-6 pb-8 flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-          Oda
-        </h1>
+        <button
+          onClick={() => router.push('/')}
+          className="text-sm px-2 py-1 rounded-lg"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          ← Ana Sayfa
+        </button>
         {countdown !== null && (
           <div className="flex items-center gap-1">
             <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
@@ -186,13 +190,6 @@ export default function Lobby({
             Hemen Başla
           </Button>
         )}
-        <button
-          onClick={() => router.push('/')}
-          className="w-full py-3 text-sm"
-          style={{ color: 'var(--color-text-muted)' }}
-        >
-          Ana Sayfaya Dön
-        </button>
       </div>
     </div>
   );
