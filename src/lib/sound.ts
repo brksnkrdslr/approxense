@@ -25,9 +25,9 @@ function beep(freq: number, durationMs: number, gain = 0.4): void {
 export function playCountdownBeep(second: number): void {
   if (isMuted()) return;
   if (second >= 2) {
-    beep(880, 100); // klasik — 5,4,3,2
+    beep(880, 100);  // klasik — 5,4,3,2
   } else {
-    beep(440, 200); // oktav altı, uzun — 1
+    beep(1760, 200); // oktav üstü, uzun — 1
   }
 }
 
