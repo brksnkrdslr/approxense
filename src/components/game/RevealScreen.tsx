@@ -142,37 +142,7 @@ export default function RevealScreen({
         </div>
       )}
 
-      {/* Leaderboard */}
-      {leaderboard && leaderboard.length > 0 && (
-        <div
-          className="rounded-[16px] border p-5"
-          style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-        >
-          <p className="text-sm font-medium mb-3" style={{ color: 'var(--color-text-secondary)' }}>Sıralama</p>
-          <div className="flex flex-col gap-2">
-            {leaderboard.map((player, i) => {
-              const isMe = player.playerId === currentPlayerId;
-              return (
-                <div key={player.playerId} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono w-5" style={{ color: 'var(--color-text-muted)' }}>{i + 1}</span>
-                    <span
-                      className="text-sm font-medium"
-                      style={{ color: isMe ? 'var(--color-accent)' : 'var(--color-text-primary)' }}
-                    >
-                      {player.displayName || `Oyuncu ${i + 1}`}
-                      {isMe && <span className="ml-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>(Sen)</span>}
-                    </span>
-                  </div>
-                  <span className="text-sm font-mono" style={{ color: 'var(--color-accent)' }}>
-                    {formatScore(player.score)}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* Sıralama sadece oyun sonunda gösterilir */}
 
       {/* Sonraki butonu */}
       <div
