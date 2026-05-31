@@ -64,7 +64,9 @@ export default function Keypad({
     ? submitReady
       ? `⏳ Bekleniyor… ${submitReadyCount ?? 1}/${totalPlayers} (İptal)`
       : 'Hazır'
-    : 'Hazır';
+    : submitReady
+      ? '⏳ Hesaplanıyor…'
+      : 'Hazır';
 
   return (
     <div

@@ -25,6 +25,7 @@ export default function GamePage() {
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null);
   const [rounds, setRounds] = useState<RoundScore[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const submitLock = useRef(false);
 
   useEffect(() => {
@@ -67,6 +68,7 @@ export default function GamePage() {
   async function submitGuess(value: string) {
     if (submitLock.current || !session) return;
     submitLock.current = true;
+    setIsSubmitting(true);
 
     const guess = value ? parseInt(value, 10) : null;
     const playerId = getOrCreatePlayerId();
@@ -97,6 +99,7 @@ export default function GamePage() {
         { logScore: 0, percentileScore: 0, wValue: 0, finalScore: 0, actualAnswer: 0, unit: '', questionId: question.id, questionText: question.question_text, guessedValue: guess },
       ]);
     }
+    setIsSubmitting(false);
     setPhase('reveal');
   }
 
@@ -162,6 +165,7 @@ export default function GamePage() {
             value={inputValue}
             onChange={setInputValue}
             onSubmitReady={() => submitGuess(inputValue)}
+            submitReady={isSubmitting}
           />
         </>
       )}

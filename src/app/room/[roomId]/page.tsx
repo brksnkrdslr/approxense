@@ -59,6 +59,7 @@ export default function RoomPage() {
     typeof window !== 'undefined' ? getOrCreateDisplayName() : ''
   );
   const submitLock = useRef(false);
+  const submitGuessRef = useRef<(value: string) => Promise<void>>(async () => {});
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const connectedPlayersRef = useRef<string[]>([]);
 
@@ -173,7 +174,7 @@ export default function RoomPage() {
           if (allReady) {
             setAnswerReadyBy([]);
             setMyAnswerReady(false);
-            submitGuess(inputValueRef.current);
+            submitGuessRef.current(inputValueRef.current);
           }
           return allReady ? [] : next;
         });
@@ -250,8 +251,9 @@ export default function RoomPage() {
     };
   }, [roomId]);
 
-  // inputValue ref'ini güncel tut (broadcast closure'ları için)
+  // inputValue ve submitGuess ref'lerini güncel tut (broadcast closure'ları için)
   useEffect(() => { inputValueRef.current = inputValue; }, [inputValue]);
+  useEffect(() => { submitGuessRef.current = submitGuess; });
 
   // 3-2-1 geri sayım
   useEffect(() => {
