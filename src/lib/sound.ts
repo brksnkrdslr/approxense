@@ -3,13 +3,20 @@ let ctx: AudioContext | null = null;
 function getCtx(): AudioContext | null {
   if (typeof window === 'undefined') return null;
   if (!ctx) ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-  if (ctx.state === 'suspended') ctx.resume();
   return ctx;
 }
 
-function beep(freq: number, durationMs: number, gain = 0.4): void {
+/** Kullanıcı etkileşimi sırasında çağır — AudioContext'i önceden uyandırır */
+export async function warmUpAudio(): Promise<void> {
   const ac = getCtx();
   if (!ac) return;
+  if (ac.state === 'suspended') await ac.resume();
+}
+
+async function beep(freq: number, durationMs: number, gain = 0.4): Promise<void> {
+  const ac = getCtx();
+  if (!ac) return;
+  if (ac.state === 'suspended') await ac.resume();
   const osc = ac.createOscillator();
   const g = ac.createGain();
   osc.type = 'sine';

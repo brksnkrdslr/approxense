@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { isMuted, setMuted } from '@/lib/sound';
+import { isMuted, setMuted, warmUpAudio } from '@/lib/sound';
 
 interface KeypadProps {
   value: string;
@@ -57,6 +57,7 @@ export default function Keypad({
 }: KeypadProps) {
   function handleKey(key: string) {
     if (disabled) return;
+    warmUpAudio();
     if (key === '⌫') { onChange(value.slice(0, -1)); return; }
     if (key === '.000') {
       if (value === '' || value === '0') return;
