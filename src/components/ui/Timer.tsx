@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { playBeep, getBeepStyle } from '@/lib/sound';
 
 interface TimerProps {
   duration: number;
@@ -19,9 +20,13 @@ export default function Timer({ duration, onExpire, paused = false, onTick }: Ti
 
   useEffect(() => {
     onTick?.(timeLeft);
-    // Son 5 saniye: her saniye kısa titreşim (destekleyen Android cihazlarda)
-    if (timeLeft > 0 && timeLeft <= 5 && typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(timeLeft === 1 ? [80, 40, 80] : 40);
+    if (timeLeft > 0 && timeLeft <= 5) {
+      // Titreşim (Android)
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(timeLeft === 1 ? [80, 40, 80] : 40);
+      }
+      // Bip sesi
+      playBeep(getBeepStyle());
     }
   }, [timeLeft]);
 
