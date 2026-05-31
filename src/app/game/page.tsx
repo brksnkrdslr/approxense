@@ -37,28 +37,14 @@ export default function GamePage() {
 
   useEffect(() => {
     async function init() {
-      // Try to reuse existing session from storage
-      const raw = sessionStorage.getItem('approxense_session');
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw);
-          if (parsed.sessionId && parsed.questions?.length) {
-            setSession(parsed);
-            setPhase('playing');
-            return;
-          }
-        } catch {}
-      }
-
-      // Fetch new session
+      sessionStorage.removeItem('approxense_session');
       try {
         const res = await fetch('/api/questions/session?mode=single');
         if (!res.ok) throw new Error(`${res.status}`);
         const data = await res.json();
-        sessionStorage.setItem('approxense_session', JSON.stringify(data));
         setSession(data);
         setPhase('playing');
-      } catch (e: any) {
+      } catch {
         setError('Sorular yüklenemedi. Tekrar dene.');
       }
     }
