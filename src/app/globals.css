@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
+/* Light mode (default) */
 :root {
   --color-bg: #FAFAF9;
   --color-surface: #FFFFFF;
@@ -14,6 +15,24 @@
   --color-success: #10B981;
   --color-warning: #F59E0B;
   --color-danger: #EF4444;
+}
+
+/* Dark mode — cihaz tercihine göre otomatik */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0F0F0E;
+    --color-surface: #1C1917;
+    --color-surface-alt: #292524;
+    --color-border: #3D3935;
+    --color-text-primary: #FAFAF9;
+    --color-text-secondary: #A8A29E;
+    --color-text-muted: #78716C;
+    --color-accent: #38BDF8;
+    --color-accent-hover: #7DD3FC;
+    --color-success: #34D399;
+    --color-warning: #FBBF24;
+    --color-danger: #F87171;
+  }
 }
 
 body {
@@ -73,7 +92,7 @@ html, .phone-body {
 /* Desktop: telefon çerçevesi */
 @media (min-width: 600px) {
   .phone-body {
-    background-color: #1a1a1a;
+    background-color: #E8E5E1;
     height: 100dvh;
     overflow: hidden;
   }
@@ -81,7 +100,14 @@ html, .phone-body {
   .phone-outer {
     min-height: 100dvh;
     align-items: center;
-    background-color: #1a1a1a;
+    background-color: #E8E5E1;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .phone-body,
+    .phone-outer {
+      background-color: #1a1a1a;
+    }
   }
 
   .phone-frame {
