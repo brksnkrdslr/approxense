@@ -1,32 +1,16 @@
-import { Category, Question, QuestionPublic } from '@/types';
+import { Category, Question, QuestionPublic, GameSettings, ALL_CATEGORIES } from '@/types';
 
-const CATEGORIES: Category[] = ['distance', 'scale', 'space', 'time', 'human'];
-const PER_CATEGORY = 2;
+const QUESTIONS_PER_GAME = 10;
 
+export function selectQuestions(questions: Question[], settings: GameSettings): Question[] {
+  const activeCategories = settings.categories.length > 0 ? settings.categories : ALL_CATEGORIES;
+  const pool = questions.filter((q) => q.active && activeCategories.includes(q.category));
+  return [...pool].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME);
+}
+
+// Eski isim — geriye dönük uyumluluk
 export function selectBalancedQuestions(questions: Question[]): Question[] {
-  const byCategory: Record<Category, Question[]> = {
-    distance: [],
-    scale: [],
-    space: [],
-    time: [],
-    human: [],
-  };
-
-  for (const q of questions) {
-    if (q.active && byCategory[q.category]) {
-      byCategory[q.category].push(q);
-    }
-  }
-
-  const selected: Question[] = [];
-
-  for (const category of CATEGORIES) {
-    const pool = byCategory[category];
-    const shuffled = pool.sort(() => Math.random() - 0.5);
-    selected.push(...shuffled.slice(0, PER_CATEGORY));
-  }
-
-  return selected.sort(() => Math.random() - 0.5);
+  return selectQuestions(questions, { duration: 30, categories: ALL_CATEGORIES });
 }
 
 export function toPublicQuestion(q: Question): QuestionPublic {
@@ -36,4 +20,23 @@ export function toPublicQuestion(q: Question): QuestionPublic {
     question_text: q.question_text,
     unit: q.unit,
   };
+}
+
+export function getSettings(): GameSettings {
+  if (typeof window === 'undefined') return { duration: 30, categories: ALL_CATEGORIES };
+  try {
+    const raw = localStorage.getItem('approxense_settings');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed.duration && Array.isArray(parsed.categories) && parsed.categories.length > 0) {
+        return parsed as GameSettings;
+      }
+    }
+  } catch {}
+  return { duration: 30, categories: [...ALL_CATEGORIES] };
+}
+
+export function saveSettings(settings: GameSettings): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('approxense_settings', JSON.stringify(settings));
 }

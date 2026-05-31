@@ -1,5 +1,28 @@
 export type Category = 'distance' | 'scale' | 'space' | 'time' | 'human';
 export type GameMode = 'single' | 'multiplayer';
+
+// Yeni kategori eklemek için sadece bu iki sabiti güncelle + DB CHECK constraint
+export const ALL_CATEGORIES: Category[] = ['distance', 'scale', 'space', 'time', 'human'];
+export const CATEGORY_LABELS: Record<Category, string> = {
+  distance: 'Mesafe',
+  scale: 'Ölçek',
+  space: 'Alan',
+  time: 'Zaman',
+  human: 'İnsan',
+};
+
+export const DURATION_OPTIONS = [15, 30, 45, 60] as const;
+export type Duration = typeof DURATION_OPTIONS[number];
+
+export interface GameSettings {
+  duration: Duration;
+  categories: Category[];
+}
+
+export const DEFAULT_SETTINGS: GameSettings = {
+  duration: 30,
+  categories: [...ALL_CATEGORIES],
+};
 export type RoomStatus = 'waiting' | 'countdown' | 'playing' | 'finished';
 
 export interface Question {

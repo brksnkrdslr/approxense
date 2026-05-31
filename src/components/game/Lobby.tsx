@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/ui/Button';
+import SettingsPanel from '@/components/game/SettingsPanel';
+import { GameSettings } from '@/types';
 
 interface LobbyPlayer {
   playerId: string;
@@ -20,6 +22,9 @@ interface LobbyProps {
   onReady: () => void;
   onStartNow: () => void;
   joinUrl: string;
+  settings: GameSettings;
+  onSettingsChange: (s: GameSettings) => void;
+  isHost: boolean;
 }
 
 export default function Lobby({
@@ -30,6 +35,9 @@ export default function Lobby({
   onReady,
   onStartNow,
   joinUrl,
+  settings,
+  onSettingsChange,
+  isHost,
 }: LobbyProps) {
   const readyCount = players.filter((p) => p.isReady).length;
   const canStartNow = readyCount > players.length / 2;
@@ -157,6 +165,15 @@ export default function Lobby({
         <span>{copied ? '✓' : '🔗'}</span>
         <span>{copied ? 'Link kopyalandı!' : 'Yeni oyuncu davet et'}</span>
       </button>
+
+      {/* Ayarlar */}
+      <div className="rounded-[16px] border px-4 py-4" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)' }}>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Oyun Ayarları</span>
+          {!isHost && <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Host ayarlıyor</span>}
+        </div>
+        <SettingsPanel settings={settings} onChange={onSettingsChange} readonly={!isHost} />
+      </div>
 
       <div className="flex flex-col gap-3">
         <Button onClick={onReady} variant={isReady ? 'secondary' : 'primary'}>

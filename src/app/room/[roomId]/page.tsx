@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { getOrCreatePlayerId, getOrCreateDisplayName, getPlayerColor, getPlayerHue, hueToColor, savePlayerHue } from '@/lib/utils';
+import { getSettings } from '@/lib/questions';
+import { GameSettings, DEFAULT_SETTINGS } from '@/types';
+import SettingsPanel from '@/components/game/SettingsPanel';
 import Lobby from '@/components/game/Lobby';
 import QuestionCard from '@/components/game/QuestionCard';
 import RevealScreen from '@/components/game/RevealScreen';
@@ -64,8 +67,12 @@ export default function RoomPage() {
   const [restartReadyBy, setRestartReadyBy] = useState<Set<string>>(new Set());
   const [readyPlayerIds, setReadyPlayerIds] = useState<string[]>([]);
   const [shouldStart, setShouldStart] = useState(false);
+  const [roomSettings, setRoomSettings] = useState<GameSettings>(() =>
+    typeof window !== 'undefined' ? getSettings() : DEFAULT_SETTINGS
+  );
   const [answerReadyBy, setAnswerReadyBy] = useState<string[]>([]);
   const [myAnswerReady, setMyAnswerReady] = useState(false);
+  const [gameDuration, setGameDuration] = useState<number>(DEFAULT_SETTINGS.duration);
   const inputValueRef = useRef('');
   const [roundAnswers, setRoundAnswers] = useState<{ playerId: string; displayName: string | null; guessedValue: number | null; finalScore: number }[]>([]);
   const [myDisplayName, setMyDisplayName] = useState<string>(() =>
@@ -115,8 +122,12 @@ export default function RoomPage() {
     channelRef.current = channel;
 
     channel
+      .on('broadcast', { event: 'settings_update' }, ({ payload }: { payload: { settings: GameSettings } }) => {
+        setRoomSettings(payload.settings);
+      })
       .on('broadcast', { event: 'game_start' }, async ({ payload }) => {
         setSessionId(payload.sessionId);
+        if (payload.duration) setGameDuration(payload.duration);
         const res = await fetch(`/api/game/session?id=${payload.sessionId}`);
         if (!res.ok) return;
         const data = await res.json();
@@ -301,15 +312,15 @@ export default function RoomPage() {
     const res = await fetch(`/api/rooms/${roomId}/start`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ playerId: playerId.current, force: true }),
+      body: JSON.stringify({ playerId: playerId.current, force: true, settings: roomSettings }),
     });
     if (!res.ok) return;
     const data = await res.json();
-    // Broadcast sadece sessionId — her client kendi sorularını çeker
+    const finalSettings: GameSettings = data.settings ?? roomSettings;
     await channelRef.current?.send({
       type: 'broadcast',
       event: 'game_start',
-      payload: { sessionId: data.sessionId },
+      payload: { sessionId: data.sessionId, duration: finalSettings.duration },
     });
   }
 
@@ -488,6 +499,16 @@ export default function RoomPage() {
         onReady={handleReady}
         onStartNow={handleStartNow}
         joinUrl={joinUrl}
+        settings={roomSettings}
+        onSettingsChange={(s) => {
+          setRoomSettings(s);
+          channelRef.current?.send({
+            type: 'broadcast',
+            event: 'settings_update',
+            payload: { settings: s },
+          });
+        }}
+        isHost={[...connectedPlayersRef.current].sort()[0] === playerId.current || connectedPlayersRef.current.length === 0}
       />
       </div>
     );
@@ -535,7 +556,7 @@ export default function RoomPage() {
           </button>
           <Timer
             key={`${sessionId}-${round}`}
-            duration={30}
+            duration={gameDuration}
             onExpire={() => submitGuess(inputValue)}
           />
         </div>

@@ -6,12 +6,14 @@ import QuestionCard from '@/components/game/QuestionCard';
 import RevealScreen from '@/components/game/RevealScreen';
 import Timer from '@/components/ui/Timer';
 import Keypad from '@/components/game/Keypad';
-import { QuestionPublic, ScoreResult, RoundScore } from '@/types';
+import { QuestionPublic, ScoreResult, RoundScore, GameSettings, DEFAULT_SETTINGS } from '@/types';
 import { getOrCreatePlayerId } from '@/lib/utils';
+import { getSettings } from '@/lib/questions';
 
 interface SessionData {
   sessionId: string;
   questions: QuestionPublic[];
+  settings?: GameSettings;
 }
 
 type GamePhase = 'loading' | 'playing' | 'reveal';
@@ -26,6 +28,7 @@ export default function GamePage() {
   const [rounds, setRounds] = useState<RoundScore[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [gameDuration, setGameDuration] = useState<number>(DEFAULT_SETTINGS.duration);
   const submitLock = useRef(false);
 
   useEffect(() => {
@@ -38,8 +41,14 @@ export default function GamePage() {
   useEffect(() => {
     async function init() {
       sessionStorage.removeItem('approxense_session');
+      const s = getSettings();
+      setGameDuration(s.duration);
       try {
-        const res = await fetch('/api/questions/session?mode=single');
+        const params = new URLSearchParams({
+          duration: String(s.duration),
+          categories: s.categories.join(','),
+        });
+        const res = await fetch(`/api/questions/session?${params}`);
         if (!res.ok) throw new Error(`${res.status}`);
         const data = await res.json();
         setSession(data);
@@ -137,7 +146,7 @@ export default function GamePage() {
             </button>
             <Timer
               key={`${session.sessionId}-${round}`}
-              duration={30}
+              duration={gameDuration}
               onExpire={() => submitGuess(inputValue)}
             />
           </div>
