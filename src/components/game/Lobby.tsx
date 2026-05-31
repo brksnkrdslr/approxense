@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button';
 interface LobbyPlayer {
   playerId: string;
   displayName: string | null;
+  color: string;
   isReady: boolean;
   isConnected: boolean;
 }
@@ -107,17 +108,23 @@ export default function Lobby({
           const isMe = player.playerId === currentPlayerId;
           return (
             <div key={player.playerId} className="flex items-center justify-between px-4 py-3">
-              <span
-                className="text-sm font-medium"
-                style={{ color: isMe ? 'var(--color-accent)' : 'var(--color-text-primary)' }}
-              >
-                {player.displayName || `Oyuncu ${i + 1}`}
-                {isMe && (
-                  <span className="ml-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                    (Sen)
-                  </span>
-                )}
-              </span>
+              <div className="flex items-center gap-2">
+                <span
+                  className="rounded-sm flex-shrink-0"
+                  style={{ width: '10px', height: '10px', backgroundColor: player.color }}
+                />
+                <span
+                  className="text-sm font-bold"
+                  style={{ color: player.color }}
+                >
+                  {player.displayName || `Oyuncu ${i + 1}`}
+                  {isMe && (
+                    <span className="ml-1 text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>
+                      (Sen)
+                    </span>
+                  )}
+                </span>
+              </div>
               <span
                 className="text-xs px-2 py-1 rounded-full"
                 style={{

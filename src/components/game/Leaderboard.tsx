@@ -3,6 +3,7 @@ import { formatScore } from '@/lib/utils';
 interface LeaderboardEntry {
   playerId: string;
   displayName: string | null;
+  color: string;
   score: number;
   isConnected: boolean;
 }
@@ -33,12 +34,16 @@ export default function Leaderboard({ entries, currentPlayerId }: LeaderboardPro
                 {i + 1}
               </span>
               <span
-                className="text-sm font-medium"
-                style={{ color: isMe ? 'var(--color-accent)' : 'var(--color-text-primary)' }}
+                className="rounded-sm flex-shrink-0"
+                style={{ width: '10px', height: '10px', backgroundColor: entry.color }}
+              />
+              <span
+                className="text-sm font-bold"
+                style={{ color: entry.color }}
               >
                 {entry.displayName || `Oyuncu ${i + 1}`}
                 {isMe && (
-                  <span className="ml-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                  <span className="ml-1 text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>
                     (Sen)
                   </span>
                 )}

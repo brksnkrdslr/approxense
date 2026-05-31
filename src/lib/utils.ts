@@ -25,6 +25,29 @@ export function saveDisplayName(name: string): void {
   if (name.trim()) localStorage.setItem('approxense_display_name', name.trim());
 }
 
+export const PLAYER_COLORS = [
+  '#6366f1', // indigo
+  '#f59e0b', // amber
+  '#10b981', // emerald
+  '#ef4444', // red
+  '#3b82f6', // blue
+  '#ec4899', // pink
+  '#8b5cf6', // violet
+  '#14b8a6', // teal
+  '#f97316', // orange
+  '#84cc16', // lime
+];
+
+export function getPlayerColor(): string {
+  if (typeof window === 'undefined') return PLAYER_COLORS[0];
+  return localStorage.getItem('approxense_player_color') ?? PLAYER_COLORS[0];
+}
+
+export function savePlayerColor(color: string): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('approxense_player_color', color);
+}
+
 export function getOrCreatePlayerId(): string {
   if (typeof window === 'undefined') return '';
   let id = localStorage.getItem('approxense_player_id');

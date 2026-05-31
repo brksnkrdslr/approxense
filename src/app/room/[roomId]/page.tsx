@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { getOrCreatePlayerId, getOrCreateDisplayName } from '@/lib/utils';
+import { getOrCreatePlayerId, getOrCreateDisplayName, getPlayerColor } from '@/lib/utils';
 import Lobby from '@/components/game/Lobby';
 import QuestionCard from '@/components/game/QuestionCard';
 import RevealScreen from '@/components/game/RevealScreen';
@@ -17,6 +17,7 @@ type RoomPhase = 'lobby' | 'countdown' | 'playing' | 'reveal' | 'finished';
 interface LobbyPlayer {
   playerId: string;
   displayName: string | null;
+  color: string;
   isReady: boolean;
   isConnected: boolean;
 }
@@ -24,6 +25,7 @@ interface LobbyPlayer {
 interface LeaderboardEntry {
   playerId: string;
   displayName: string | null;
+  color: string;
   score: number;
   isConnected: boolean;
 }
@@ -58,6 +60,7 @@ export default function RoomPage() {
   const [myDisplayName, setMyDisplayName] = useState<string>(() =>
     typeof window !== 'undefined' ? getOrCreateDisplayName() : ''
   );
+  const myColor = typeof window !== 'undefined' ? getPlayerColor() : '#6366f1';
   const submitLock = useRef(false);
   const submitGuessRef = useRef<(value: string) => Promise<void>>(async () => {});
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -210,15 +213,15 @@ export default function RoomPage() {
           return next;
         });
       })
-      .on('broadcast', { event: 'player_score' }, ({ payload }: { payload: { playerId: string; displayName: string; totalScore: number } }) => {
+      .on('broadcast', { event: 'player_score' }, ({ payload }: { payload: { playerId: string; displayName: string; color?: string; totalScore: number } }) => {
         setLeaderboard((prev) => {
           const next = prev.filter((e) => e.playerId !== payload.playerId);
-          return [...next, { playerId: payload.playerId, displayName: payload.displayName, score: payload.totalScore, isConnected: true }]
+          return [...next, { playerId: payload.playerId, displayName: payload.displayName, color: payload.color ?? '#6366f1', score: payload.totalScore, isConnected: true }]
             .sort((a, b) => b.score - a.score);
         });
       })
       .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState<{ playerId: string; displayName: string }>();
+        const state = channel.presenceState<{ playerId: string; displayName: string; color?: string }>();
         const entries = Object.values(state).flat();
         connectedPlayersRef.current = [...new Set(entries.map((e) => e.playerId))];
         setPlayers((prev) => {
@@ -228,6 +231,7 @@ export default function RoomPage() {
             map.set(e.playerId, {
               playerId: e.playerId,
               displayName: e.displayName ?? existing?.displayName ?? null,
+              color: e.color ?? existing?.color ?? '#6366f1',
               isReady: existing?.isReady ?? false,
               isConnected: true,
             });
@@ -241,7 +245,7 @@ export default function RoomPage() {
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          await channel.track({ playerId: pid, displayName: myName });
+          await channel.track({ playerId: pid, displayName: myName, color: getPlayerColor() });
         }
       });
 
@@ -372,14 +376,14 @@ export default function RoomPage() {
       // Kendi skorunu güncelle
       setLeaderboard((prev) => {
         const next = prev.filter((e) => e.playerId !== playerId.current);
-        return [...next, { playerId: playerId.current, displayName: myDisplayName, score: newScore, isConnected: true }]
+        return [...next, { playerId: playerId.current, displayName: myDisplayName, color: myColor, score: newScore, isConnected: true }]
           .sort((a, b) => b.score - a.score);
       });
       // Diğer oyunculara skor ve cevap broadcast et
       channelRef.current?.send({
         type: 'broadcast',
         event: 'player_score',
-        payload: { playerId: playerId.current, displayName: myDisplayName, totalScore: newScore },
+        payload: { playerId: playerId.current, displayName: myDisplayName, color: myColor, totalScore: newScore },
       });
       channelRef.current?.send({
         type: 'broadcast',
@@ -525,15 +529,19 @@ export default function RoomPage() {
             className="rounded-[12px] border divide-y"
             style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)' }}
           >
-            {players.map(({ playerId: pid, displayName }) => {
+            {players.map(({ playerId: pid, displayName, color }) => {
               const name = displayName ?? (pid === playerId.current ? myDisplayName : 'Oyuncu');
               const ready = readyPlayerIds.includes(pid);
               const isMe = pid === playerId.current;
+              const playerColor = isMe ? myColor : color;
               return (
                 <div key={pid} className="flex items-center justify-between px-4 py-3">
-                  <span className="text-sm font-medium" style={{ color: isMe ? 'var(--color-accent)' : 'var(--color-text-primary)' }}>
-                    {name}{isMe && <span className="ml-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>(Sen)</span>}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-sm flex-shrink-0" style={{ width: '10px', height: '10px', backgroundColor: playerColor }} />
+                    <span className="text-sm font-bold" style={{ color: playerColor }}>
+                      {name}{isMe && <span className="ml-1 text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>(Sen)</span>}
+                    </span>
+                  </div>
                   <span
                     className="text-xs px-2 py-1 rounded-full"
                     style={{
