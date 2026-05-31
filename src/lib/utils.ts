@@ -12,13 +12,17 @@ function generateUUID(): string {
 
 export function getOrCreateDisplayName(): string {
   if (typeof window === 'undefined') return 'Misafir';
-  let name = localStorage.getItem('approxense_display_name');
-  if (!name) {
-    const num = Math.floor(1000 + Math.random() * 9000);
-    name = `Misafir${num}`;
-    localStorage.setItem('approxense_display_name', name);
-  }
+  const saved = localStorage.getItem('approxense_display_name');
+  if (saved) return saved;
+  const num = Math.floor(1000 + Math.random() * 9000);
+  const name = `Misafir${num}`;
+  localStorage.setItem('approxense_display_name', name);
   return name;
+}
+
+export function saveDisplayName(name: string): void {
+  if (typeof window === 'undefined') return;
+  if (name.trim()) localStorage.setItem('approxense_display_name', name.trim());
 }
 
 export function getOrCreatePlayerId(): string {
