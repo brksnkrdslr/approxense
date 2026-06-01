@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { savePlayerHue, saveSettings } from '@/lib/questions';
-import { DEFAULT_SETTINGS } from '@/types';
+import { savePlayerHue } from '@/lib/utils';
 
 const PRESET_COLORS = [
   { hue: 0,   hex: '#EF4444', label: 'Kırmızı' },
