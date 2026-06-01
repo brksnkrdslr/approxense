@@ -584,8 +584,9 @@ export default function RoomPage() {
             payload: { settings: s },
           });
         }}
-        isHost={[...connectedPlayersRef.current].sort()[0] === playerId.current || connectedPlayersRef.current.length === 0}
+        isHost={typeof window !== 'undefined' && (sessionStorage.getItem('approxense_created_room') === roomId || connectedPlayersRef.current.length === 0)}
         isSolo={connectedPlayersRef.current.length <= 1}
+        onEditNickname={() => setShowNickname(true)}
       />
       </div>
     );

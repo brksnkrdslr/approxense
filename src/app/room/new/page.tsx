@@ -18,6 +18,7 @@ export default function NewRoomPage() {
         });
         if (!res.ok) throw new Error();
         const data = await res.json();
+        sessionStorage.setItem('approxense_created_room', data.roomId);
         router.replace(`/room/${data.roomId}`);
       } catch {
         router.replace('/');

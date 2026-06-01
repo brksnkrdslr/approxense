@@ -26,6 +26,7 @@ interface LobbyProps {
   onSettingsChange: (s: GameSettings) => void;
   isHost: boolean;
   isSolo: boolean;
+  onEditNickname?: () => void;
 }
 
 function CopyIcon() {
@@ -57,6 +58,7 @@ export default function Lobby({
   onSettingsChange,
   isHost,
   isSolo,
+  onEditNickname,
 }: LobbyProps) {
   const [copied, setCopied] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -136,7 +138,12 @@ export default function Lobby({
             const isMe = player.playerId === currentPlayerId;
             const initial = (player.displayName || `O${i + 1}`).slice(0, 1).toUpperCase();
             return (
-              <div key={player.playerId} className="flex items-center justify-between px-4 py-3">
+              <div
+                key={player.playerId}
+                className="flex items-center justify-between px-4 py-3"
+                onClick={isMe && onEditNickname ? onEditNickname : undefined}
+                style={{ cursor: isMe && onEditNickname ? 'pointer' : 'default' }}
+              >
                 <div className="flex items-center gap-3">
                   {/* Avatar */}
                   <div
@@ -156,6 +163,9 @@ export default function Lobby({
                       {player.displayName || `Oyuncu ${i + 1}`}
                       {isMe && <span className="ml-1.5 text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>sen</span>}
                     </p>
+                    {isMe && onEditNickname && (
+                      <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>düzenle</p>
+                    )}
                   </div>
                 </div>
                 {/* Ready badge */}
