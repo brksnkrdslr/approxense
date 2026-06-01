@@ -12,7 +12,7 @@ export default function LandingPage() {
             className="text-5xl font-semibold tracking-tight mb-3"
             style={{ color: 'var(--color-text-primary)', fontFamily: 'DM Sans, sans-serif' }}
           >
-            Approxense
+            Aproxxense 2
           </h1>
           <p className="text-base" style={{ color: 'var(--color-text-muted)' }}>
             Tahmin zekası oyunu
