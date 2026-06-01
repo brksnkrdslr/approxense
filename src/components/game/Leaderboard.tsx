@@ -11,6 +11,7 @@ interface LeaderboardEntry {
 interface LeaderboardProps {
   entries: LeaderboardEntry[];
   currentPlayerId: string;
+  readyPlayerIds?: string[];
 }
 
 const RANK_MEDALS = [
@@ -31,7 +32,7 @@ function TrophyIcon() {
   );
 }
 
-export default function Leaderboard({ entries, currentPlayerId }: LeaderboardProps) {
+export default function Leaderboard({ entries, currentPlayerId, readyPlayerIds }: LeaderboardProps) {
   const sorted = [...entries].sort((a, b) => b.score - a.score);
   const winner = sorted[0];
   const rest = sorted.slice(1);
@@ -77,6 +78,18 @@ export default function Leaderboard({ entries, currentPlayerId }: LeaderboardPro
                     </span>
                   )}
                 </p>
+                {readyPlayerIds && (
+                  <span
+                    className="inline-block mt-1.5 text-xs px-2 py-0.5 rounded-full font-medium"
+                    style={{
+                      backgroundColor: readyPlayerIds.includes(winner.playerId) ? 'rgba(4,120,87,0.12)' : 'var(--color-surface)',
+                      color: readyPlayerIds.includes(winner.playerId) ? 'var(--color-success)' : 'var(--color-text-secondary)',
+                      border: `1px solid ${readyPlayerIds.includes(winner.playerId) ? 'rgba(4,120,87,0.25)' : 'var(--color-border)'}`,
+                    }}
+                  >
+                    {readyPlayerIds.includes(winner.playerId) ? '✓ Hazır' : 'Bekliyor'}
+                  </span>
+                )}
               </div>
               <p
                 className="font-mono font-bold leading-none"
@@ -134,12 +147,26 @@ export default function Leaderboard({ entries, currentPlayerId }: LeaderboardPro
                     <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>ayrıldı</span>
                   )}
                 </div>
-                <span
-                  className="text-base font-mono font-semibold"
-                  style={{ color: 'var(--color-text-primary)' }}
-                >
-                  {formatScore(entry.score)}
-                </span>
+                <div className="flex items-center gap-2">
+                  {readyPlayerIds && (
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full font-medium"
+                      style={{
+                        backgroundColor: readyPlayerIds.includes(entry.playerId) ? 'rgba(4,120,87,0.12)' : 'var(--color-surface-alt)',
+                        color: readyPlayerIds.includes(entry.playerId) ? 'var(--color-success)' : 'var(--color-text-secondary)',
+                        border: `1px solid ${readyPlayerIds.includes(entry.playerId) ? 'rgba(4,120,87,0.25)' : 'var(--color-border)'}`,
+                      }}
+                    >
+                      {readyPlayerIds.includes(entry.playerId) ? '✓ Hazır' : 'Bekliyor'}
+                    </span>
+                  )}
+                  <span
+                    className="text-base font-mono font-semibold"
+                    style={{ color: 'var(--color-text-primary)', minWidth: '48px', textAlign: 'right' }}
+                  >
+                    {formatScore(entry.score)}
+                  </span>
+                </div>
               </div>
             );
           })}

@@ -781,41 +781,7 @@ export default function RoomPage() {
             </div>
           );
         })()}
-        <Leaderboard entries={leaderboard} currentPlayerId={playerId.current} />
-
-        {/* Oyuncu hazır durumları */}
-        {players.length > 0 && (
-          <div
-            className="rounded-[12px] border divide-y"
-            style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)' }}
-          >
-            {players.map(({ playerId: pid, displayName, color }) => {
-              const name = displayName ?? (pid === playerId.current ? myDisplayName : 'Oyuncu');
-              const ready = readyPlayerIds.includes(pid);
-              const isMe = pid === playerId.current;
-              const playerColor = isMe ? myColor : color;
-              return (
-                <div key={pid} className="flex items-center justify-between px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-sm flex-shrink-0" style={{ width: '10px', height: '10px', backgroundColor: playerColor }} />
-                    <span className="text-sm font-bold" style={{ color: playerColor }}>
-                      {name}{isMe && <span className="ml-1 text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>(Sen)</span>}
-                    </span>
-                  </div>
-                  <span
-                    className="text-xs px-2 py-1 rounded-full"
-                    style={{
-                      backgroundColor: ready ? 'rgba(16,185,129,0.12)' : 'var(--color-surface-alt)',
-                      color: ready ? 'var(--color-success)' : 'var(--color-text-muted)',
-                    }}
-                  >
-                    {ready ? '✓ Hazır' : 'Bekliyor'}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <Leaderboard entries={leaderboard} currentPlayerId={playerId.current} readyPlayerIds={readyPlayerIds} />
 
         {/* Tekrar Oyna — broadcast ile senkronize */}
         <button
