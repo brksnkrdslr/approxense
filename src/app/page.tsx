@@ -31,14 +31,14 @@ export default function LandingPage() {
     let timer: ReturnType<typeof setTimeout>;
 
     if (phase === 'entering') {
-      timer = setTimeout(() => setPhase('visible'), 600);
+      timer = setTimeout(() => setPhase('visible'), 550);
     } else if (phase === 'visible') {
       timer = setTimeout(() => setPhase('exiting'), 5000);
     } else {
       timer = setTimeout(() => {
         setIndex((i) => (i + 1) % TEASER_QUESTIONS.length);
         setPhase('entering');
-      }, 700);
+      }, 80);
     }
 
     return () => clearTimeout(timer);
@@ -60,7 +60,7 @@ export default function LandingPage() {
 
   return (
     <div
-      className="h-full flex flex-col items-center px-6 pt-14 pb-10 overflow-hidden"
+      className="h-full flex flex-col items-center px-6 pt-12 pb-8 overflow-hidden"
       style={{ backgroundColor: 'var(--color-bg)', position: 'relative' }}
     >
       {/* Organik blob arka plan */}
@@ -82,7 +82,7 @@ export default function LandingPage() {
       />
 
       {/* Başlık */}
-      <div className="relative z-10 flex flex-col items-center gap-3 animate-fade-up mb-6">
+      <div className="relative z-10 flex flex-col items-center gap-2 animate-fade-up mb-5">
         <div
           className="text-xs font-mono tracking-widest uppercase"
           style={{ color: 'var(--color-reward)', letterSpacing: '0.18em' }}
@@ -125,29 +125,24 @@ export default function LandingPage() {
             <strong style={{ color: accentColor }}>{q.unit}</strong>
             {'dir?'}
           </p>
-          <div className="flex items-center gap-2">
+          <div
+            className="h-0.5 w-full rounded-full overflow-hidden"
+            style={{ backgroundColor: `${accentColor}18` }}
+          >
             <div
-              className="h-0.5 flex-1 rounded-full overflow-hidden"
-              style={{ backgroundColor: `${accentColor}18` }}
-            >
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: phase === 'visible' ? '100%' : '0%',
-                  backgroundColor: accentColor,
-                  transition: phase === 'visible' ? 'width 5s linear' : 'none',
-                }}
-              />
-            </div>
-            <span className="text-xs font-mono" style={{ color: `${accentColor}70` }}>
-              {index + 1}/{TEASER_QUESTIONS.length}
-            </span>
+              className="h-full rounded-full"
+              style={{
+                width: phase === 'visible' ? '100%' : '0%',
+                backgroundColor: accentColor,
+                transition: phase === 'visible' ? 'width 5s linear' : 'none',
+              }}
+            />
           </div>
         </div>
       </div>
 
       {/* Kategoriler + bilgi */}
-      <div className="relative z-10 flex flex-col items-center gap-3 mt-6 mb-5 animate-fade-up delay-200">
+      <div className="relative z-10 flex flex-col items-center gap-2 mt-5 mb-4 animate-fade-up delay-200">
         <div className="flex flex-wrap justify-center gap-2">
           {CATEGORIES.map((cat) => (
             <span
