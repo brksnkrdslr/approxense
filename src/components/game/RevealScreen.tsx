@@ -128,26 +128,26 @@ export default function RevealScreen({
           <div
             className="rounded-xl p-3 text-center animate-reveal-answer delay-200"
             style={{
-              backgroundColor: `${scoreColor}10`,
-              border: `1.5px solid ${scoreColor}30`,
+              backgroundColor: 'var(--color-accent-subtle, #6366f115)',
+              border: '1.5px solid var(--color-accent)',
             }}
           >
-            <p className="text-xs mb-2 font-medium" style={{ color: scoreColor }}>Doğru Cevap</p>
+            <p className="text-xs mb-2 font-medium" style={{ color: 'var(--color-accent)' }}>Doğru Cevap</p>
             <p
               className="font-mono font-bold break-all leading-tight"
               style={{
-                color: scoreColor,
+                color: 'var(--color-accent)',
                 fontSize: scoreResult.actualAnswer.toLocaleString('tr-TR').length > 9 ? '0.75rem' : '1.1rem',
               }}
             >
               {scoreResult.actualAnswer.toLocaleString('tr-TR')}
             </p>
             {scoreResult.actualAnswer >= 1000 && (
-              <p className="text-xs mt-0.5 truncate" style={{ color: `${scoreColor}99` }}>
+              <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--color-accent)', opacity: 0.7 }}>
                 {numberToTurkish(scoreResult.actualAnswer)}
               </p>
             )}
-            <p className="text-xs mt-1" style={{ color: `${scoreColor}99` }}>{scoreResult.unit}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--color-accent)', opacity: 0.7 }}>{scoreResult.unit}</p>
           </div>
         </div>
 
@@ -200,14 +200,21 @@ export default function RevealScreen({
                   <span className="text-sm font-semibold flex-1 truncate" style={{ color: playerColor, fontFamily: 'DM Sans, sans-serif' }}>
                     {a.displayName ?? 'Oyuncu'}{isMe ? <span className="ml-1 text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>(sen)</span> : ''}
                   </span>
-                  {/* Tahmin */}
-                  <span className="text-xs font-mono shrink-0 mr-1" style={{ color: 'var(--color-text-muted)' }}>
-                    {a.guessedValue !== null ? a.guessedValue.toLocaleString('tr-TR') : '—'}
-                  </span>
-                  {/* Puan */}
-                  <span className="text-sm font-mono font-semibold shrink-0" style={{ color: scoreCol }}>
-                    {formatScore(a.finalScore)}
-                  </span>
+                  {/* Tahmin + Puan */}
+                  <div className="flex flex-col items-end shrink-0 gap-0.5">
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] font-medium" style={{ color: 'var(--color-text-muted)' }}>cevap</span>
+                      <span className="text-xs font-mono font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                        {a.guessedValue !== null ? a.guessedValue.toLocaleString('tr-TR') : '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] font-medium" style={{ color: 'var(--color-text-muted)' }}>puan</span>
+                      <span className="text-sm font-mono font-bold" style={{ color: scoreCol }}>
+                        {formatScore(a.finalScore)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               );
             })}
