@@ -23,7 +23,7 @@ const KEYS = [
 
 function BackspaceIcon() {
   return (
-    <svg width="22" height="18" viewBox="0 0 22 18" fill="currentColor">
+    <svg width="20" height="16" viewBox="0 0 22 18" fill="currentColor">
       <path d="M9 0L0 9l9 9h13V0H9zm11 16H9.83L2.42 9l7.41-7H20v14zm-7.59-11L9 7.41 10.59 9 9 10.59 10.41 12 12 10.41 13.59 12 15 10.59 13.41 9 15 7.41z"/>
     </svg>
   );
@@ -55,9 +55,16 @@ export default function Keypad({
   totalPlayers,
   timeLeft,
 }: KeypadProps) {
+  const [pressedKey, setPressedKey] = useState<string | null>(null);
+  const [muted, setMutedState] = useState(false);
+  useEffect(() => { setMutedState(isMuted()); }, []);
+
   function handleKey(key: string) {
     if (disabled) return;
     warmUpAudio();
+    setPressedKey(key);
+    setTimeout(() => setPressedKey(null), 120);
+
     if (key === '⌫') { onChange(value.slice(0, -1)); return; }
     if (key === '.000') {
       if (value === '' || value === '0') return;
@@ -72,6 +79,12 @@ export default function Keypad({
     onChange(next);
   }
 
+  function toggleMute() {
+    const next = !muted;
+    setMutedState(next);
+    setMuted(next);
+  }
+
   const showHazir = !!onSubmitReady;
   const isMulti = totalPlayers !== undefined && totalPlayers > 1;
   const readyLabel = isMulti
@@ -79,64 +92,67 @@ export default function Keypad({
     : submitReady ? '⏳' : 'Hazır';
 
   const isUrgent = timeLeft !== undefined && timeLeft <= 5;
-  const [muted, setMutedState] = useState(false);
-  useEffect(() => { setMutedState(isMuted()); }, []);
-
-  function toggleMute() {
-    const next = !muted;
-    setMutedState(next);
-    setMuted(next);
-  }
-
   const keyWidth = 'calc((100% - 16px) / 3)';
 
   return (
     <div
       className="absolute bottom-0 left-0 right-0 w-full"
-      style={{ backgroundColor: 'var(--color-surface)', borderTop: '1px solid var(--color-border)' }}
+      style={{
+        backgroundColor: 'var(--color-surface)',
+        borderTop: `2px solid ${isUrgent ? 'rgba(239,68,68,0.4)' : 'var(--color-border)'}`,
+        transition: 'border-color 0.3s',
+        animation: isUrgent ? 'timer-urgent-pulse 0.8s ease-in-out infinite' : 'none',
+      }}
     >
       {showHazir && (
-        <div className="relative flex items-center justify-between px-3 pt-3" style={{ minHeight: '68px' }}>
-          {/* Hoparlör — sol, Hazır ile simetrik */}
+        <div
+          className="relative flex items-center justify-between px-3 pt-3"
+          style={{ minHeight: '68px' }}
+        >
+          {/* Hoparlör */}
           <button
             onClick={toggleMute}
-            className="relative rounded-[10px] flex items-center justify-center flex-shrink-0"
+            className="relative rounded-xl flex items-center justify-center flex-shrink-0 cursor-pointer"
             style={{
               width: keyWidth,
-              height: '64px',
-              backgroundColor: 'var(--color-surface)',
+              height: '60px',
+              backgroundColor: 'var(--color-surface-alt)',
               border: '1px solid var(--color-border)',
-              color: muted ? 'var(--color-text-muted)' : 'var(--color-text-primary)',
+              color: muted ? 'var(--color-text-muted)' : 'var(--color-text-secondary)',
               opacity: muted ? 0.5 : 1,
+              transition: 'opacity 0.15s',
             }}
             aria-label={muted ? 'Sesi aç' : 'Sesi kapat'}
           >
             <SpeakerIcon muted={muted} />
           </button>
 
-          {/* Geri sayım — tam ortada, absolute */}
+          {/* Timer — ortada */}
           <div
             className="absolute inset-x-0 flex items-center justify-center pointer-events-none font-mono font-bold tabular-nums"
             style={{
-              fontSize: isUrgent ? '3rem' : '2.25rem',
+              fontSize: isUrgent ? '3.2rem' : '2.4rem',
               color: isUrgent ? 'var(--color-danger)' : 'var(--color-text-primary)',
-              transition: 'font-size 0.15s ease, color 0.15s ease',
+              transition: 'font-size 0.2s cubic-bezier(0.22,1,0.36,1), color 0.2s',
               lineHeight: 1,
+              transform: isUrgent ? 'scale(1.05)' : 'scale(1)',
             }}
           >
             {timeLeft ?? ''}
           </div>
 
-          {/* Hazır — sağda, aynı genişlik */}
+          {/* Hazır */}
           <button
             onClick={onSubmitReady}
-            className="relative rounded-[10px] text-base font-medium transition-colors flex-shrink-0"
+            className="relative rounded-xl text-base font-semibold flex-shrink-0 cursor-pointer"
             style={{
               width: keyWidth,
-              height: '64px',
+              height: '60px',
               backgroundColor: submitReady ? 'var(--color-surface-alt)' : 'var(--color-accent)',
               color: submitReady ? 'var(--color-text-secondary)' : 'white',
               border: submitReady ? '1px solid var(--color-border)' : 'none',
+              transition: 'background-color 0.15s, transform 0.1s',
+              letterSpacing: '-0.01em',
             }}
           >
             {readyLabel}
@@ -144,28 +160,43 @@ export default function Keypad({
         </div>
       )}
 
-      {/* Numpad — wrapper div kaldırıldı, grid düzgün çalışır */}
       <div className="p-3 grid grid-rows-4 gap-2">
         {KEYS.map((row, ri) => (
           <div key={ri} className="grid grid-cols-3 gap-2">
-            {row.map((key) => (
-              <button
-                key={key}
-                aria-label={key}
-                disabled={disabled}
-                onClick={() => handleKey(key)}
-                className="rounded-[10px] border font-mono font-medium transition-colors active:scale-95 disabled:opacity-40 flex items-center justify-center"
-                style={{
-                  minHeight: '64px',
-                  fontSize: '1.25rem',
-                  backgroundColor: key === '⌫' ? 'rgba(239,68,68,0.08)' : 'var(--color-surface)',
-                  borderColor: key === '⌫' ? 'rgba(239,68,68,0.25)' : 'var(--color-border)',
-                  color: key === '⌫' ? 'var(--color-danger)' : 'var(--color-text-primary)',
-                }}
-              >
-                {key === '⌫' ? <BackspaceIcon /> : key}
-              </button>
-            ))}
+            {row.map((key) => {
+              const isPressed = pressedKey === key;
+              const isBackspace = key === '⌫';
+              const isThousand = key === '.000';
+              return (
+                <button
+                  key={key}
+                  aria-label={key}
+                  disabled={disabled}
+                  onClick={() => handleKey(key)}
+                  className="rounded-xl border font-mono font-semibold disabled:opacity-40 flex items-center justify-center cursor-pointer select-none"
+                  style={{
+                    minHeight: '60px',
+                    fontSize: isThousand ? '0.85rem' : '1.3rem',
+                    backgroundColor: isBackspace
+                      ? isPressed ? 'rgba(239,68,68,0.16)' : 'rgba(239,68,68,0.06)'
+                      : isPressed
+                      ? 'var(--color-surface-alt)'
+                      : 'var(--color-surface)',
+                    borderColor: isBackspace
+                      ? 'rgba(239,68,68,0.2)'
+                      : isPressed
+                      ? 'var(--color-accent)'
+                      : 'var(--color-border)',
+                    color: isBackspace ? 'var(--color-danger)' : 'var(--color-text-primary)',
+                    transform: isPressed ? 'scale(0.92)' : 'scale(1)',
+                    transition: 'transform 0.12s cubic-bezier(0.22,1,0.36,1), background-color 0.12s, border-color 0.12s',
+                    fontWeight: 600,
+                  }}
+                >
+                  {key === '⌫' ? <BackspaceIcon /> : key}
+                </button>
+              );
+            })}
           </div>
         ))}
       </div>

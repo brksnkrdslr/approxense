@@ -22,8 +22,23 @@ interface RevealScreenProps {
 function renderQuestionText(text: string) {
   const parts = text.split(/\*\*(.+?)\*\*/g);
   return parts.map((part, i) =>
-    i % 2 === 1 ? <strong key={i} style={{ color: 'var(--color-accent)' }}>{part}</strong> : part
+    i % 2 === 1 ? <strong key={i} style={{ color: 'var(--color-accent)', fontWeight: 700 }}>{part}</strong> : part
   );
+}
+
+function getScoreColor(score: number): string {
+  if (score >= 8) return 'var(--color-reward)';
+  if (score >= 5) return 'var(--color-accent)';
+  if (score >= 2) return 'var(--color-warning)';
+  return 'var(--color-danger)';
+}
+
+function getScoreLabel(score: number): string {
+  if (score >= 9) return 'Mükemmel!';
+  if (score >= 7) return 'Harika!';
+  if (score >= 5) return 'İyi!';
+  if (score >= 2) return 'Fena değil';
+  return 'Kaçırdın';
 }
 
 export default function RevealScreen({
@@ -35,12 +50,13 @@ export default function RevealScreen({
   total,
   onNext,
   currentPlayerId,
-  leaderboard,
   roundAnswers,
   isMultiplayer = false,
 }: RevealScreenProps) {
   const [nextPressed, setNextPressed] = useState(false);
   const isLast = round === total;
+  const scoreColor = getScoreColor(scoreResult.finalScore);
+  const scoreLabel = getScoreLabel(scoreResult.finalScore);
 
   function handleNext() {
     setNextPressed(true);
@@ -48,27 +64,54 @@ export default function RevealScreen({
   }
 
   return (
-    <div className="px-5 pt-6 pb-48 flex flex-col gap-6">
-      {/* Soru + skorlar */}
+    <div className="px-5 pt-5 pb-48 flex flex-col gap-4 overflow-y-auto animate-fade-in" style={{ height: '100%' }}>
+
+      {/* Skor büyük — en üstte */}
       <div
-        className="rounded-[16px] border p-5 flex flex-col gap-4"
+        className="rounded-2xl p-5 text-center animate-score-pop"
+        style={{
+          background: `linear-gradient(135deg, ${scoreColor}14 0%, ${scoreColor}06 100%)`,
+          border: `2px solid ${scoreColor}30`,
+        }}
+      >
+        <p
+          className="text-xs font-semibold uppercase tracking-widest mb-2"
+          style={{ color: scoreColor, letterSpacing: '0.12em' }}
+        >
+          {scoreLabel}
+        </p>
+        <p
+          className="font-mono font-bold leading-none"
+          style={{ fontSize: '4rem', color: scoreColor, letterSpacing: '-0.04em' }}
+        >
+          {formatScore(scoreResult.finalScore)}
+        </p>
+        <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+          Toplam: <span className="font-mono font-semibold" style={{ color: 'var(--color-text-primary)' }}>{formatScore(cumulativeScore)}</span>
+        </p>
+      </div>
+
+      {/* Soru + cevaplar */}
+      <div
+        className="rounded-2xl border p-4 flex flex-col gap-4 animate-slide-up delay-100"
         style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
       >
-        <p className="text-xs text-center mb-1" style={{ color: 'var(--color-text-muted)' }}>
-          {round} / {total}
-        </p>
-        <p className="text-sm text-center" style={{ color: 'var(--color-text-secondary)' }}>
+        <p className="text-sm leading-snug text-center" style={{ color: 'var(--color-text-secondary)' }}>
           {renderQuestionText(question.question_text)}
         </p>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-[12px] p-3 text-center" style={{ backgroundColor: 'var(--color-surface-alt)' }}>
-            <p className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>Tahminin</p>
+          {/* Tahmin */}
+          <div
+            className="rounded-xl p-3 text-center"
+            style={{ backgroundColor: 'var(--color-surface-alt)' }}
+          >
+            <p className="text-xs mb-2 font-medium" style={{ color: 'var(--color-text-muted)' }}>Tahminin</p>
             <p
-              className="font-mono font-medium break-all leading-tight"
+              className="font-mono font-bold break-all leading-tight"
               style={{
                 color: 'var(--color-text-primary)',
-                fontSize: guessedValue !== null && guessedValue.toLocaleString('tr-TR').length > 9 ? '0.8rem' : '1.125rem',
+                fontSize: guessedValue !== null && guessedValue.toLocaleString('tr-TR').length > 9 ? '0.75rem' : '1.1rem',
               }}
             >
               {guessedValue !== null ? guessedValue.toLocaleString('tr-TR') : '—'}
@@ -81,54 +124,69 @@ export default function RevealScreen({
             <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>{question.unit}</p>
           </div>
 
-          <div className="rounded-[12px] p-3 text-center" style={{ backgroundColor: 'var(--color-surface-alt)' }}>
-            <p className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>Doğru Cevap</p>
+          {/* Doğru cevap */}
+          <div
+            className="rounded-xl p-3 text-center animate-reveal-answer delay-200"
+            style={{
+              backgroundColor: `${scoreColor}10`,
+              border: `1.5px solid ${scoreColor}30`,
+            }}
+          >
+            <p className="text-xs mb-2 font-medium" style={{ color: scoreColor }}>Doğru Cevap</p>
             <p
-              className="font-mono font-medium break-all leading-tight"
+              className="font-mono font-bold break-all leading-tight"
               style={{
-                color: 'var(--color-success)',
-                fontSize: scoreResult.actualAnswer.toLocaleString('tr-TR').length > 9 ? '0.8rem' : '1.125rem',
+                color: scoreColor,
+                fontSize: scoreResult.actualAnswer.toLocaleString('tr-TR').length > 9 ? '0.75rem' : '1.1rem',
               }}
             >
               {scoreResult.actualAnswer.toLocaleString('tr-TR')}
             </p>
             {scoreResult.actualAnswer >= 1000 && (
-              <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--color-text-muted)' }}>
+              <p className="text-xs mt-0.5 truncate" style={{ color: `${scoreColor}99` }}>
                 {numberToTurkish(scoreResult.actualAnswer)}
               </p>
             )}
-            <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>{scoreResult.unit}</p>
+            <p className="text-xs mt-1" style={{ color: `${scoreColor}99` }}>{scoreResult.unit}</p>
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: 'var(--color-border)' }}>
-          <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Bu tur</span>
-          <span className="text-2xl font-mono font-medium" style={{ color: 'var(--color-accent)' }}>
-            {formatScore(scoreResult.finalScore)}
-          </span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Toplam</span>
-          <span className="text-lg font-mono" style={{ color: 'var(--color-text-primary)' }}>
-            {formatScore(cumulativeScore)}
-          </span>
+        {/* Tur göstergesi */}
+        <div className="flex items-center justify-between pt-1 border-t" style={{ borderColor: 'var(--color-border)' }}>
+          <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Tur {round} / {total}</span>
+          <div className="flex gap-1">
+            {Array.from({ length: total }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-full"
+                style={{
+                  width: '6px',
+                  height: '6px',
+                  backgroundColor: i < round ? 'var(--color-accent)' : 'var(--color-border)',
+                  transition: 'background-color 0.3s',
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Diğer oyuncuların cevapları */}
+      {/* Çok oyunculu sıralama */}
       {roundAnswers && roundAnswers.length > 0 && (
         <div
-          className="rounded-[16px] border p-5"
+          className="rounded-2xl border p-4 animate-slide-up delay-200"
           style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
         >
-          <p className="text-sm font-medium mb-3" style={{ color: 'var(--color-text-secondary)' }}>Tur Sıralaması</p>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.1em' }}>
+            Tur Sıralaması
+          </p>
           <div className="flex flex-col gap-2">
             {[...roundAnswers].sort((a, b) => b.finalScore - a.finalScore).map((a, i) => {
               const isMe = a.playerId === currentPlayerId;
               return (
                 <div key={a.playerId} className="flex items-center justify-between gap-2">
                   <span className="text-xs font-mono w-4 shrink-0" style={{ color: 'var(--color-text-muted)' }}>{i + 1}</span>
-                  <span className="text-xs w-20 truncate shrink-0" style={{ color: isMe ? 'var(--color-accent)' : 'var(--color-text-secondary)' }}>
+                  <span className="text-xs w-20 truncate shrink-0 font-medium" style={{ color: isMe ? 'var(--color-accent)' : 'var(--color-text-secondary)' }}>
                     {a.displayName ?? 'Oyuncu'}{isMe ? ' (Sen)' : ''}
                   </span>
                   <div className="flex-1 text-right">
@@ -136,7 +194,7 @@ export default function RevealScreen({
                       {a.guessedValue !== null ? a.guessedValue.toLocaleString('tr-TR') : '—'}
                     </span>
                   </div>
-                  <span className="text-sm font-mono w-10 text-right shrink-0" style={{ color: 'var(--color-accent)' }}>
+                  <span className="text-sm font-mono font-semibold w-10 text-right shrink-0" style={{ color: 'var(--color-accent)' }}>
                     {formatScore(a.finalScore)}
                   </span>
                 </div>
@@ -146,19 +204,17 @@ export default function RevealScreen({
         </div>
       )}
 
-      {/* Sıralama sadece oyun sonunda gösterilir */}
-
       {/* Sonraki butonu */}
       <div
         className="absolute bottom-0 left-0 right-0 p-4"
-        style={{ backgroundColor: 'var(--color-bg)' }}
+        style={{ backgroundColor: 'var(--color-bg)', borderTop: '1px solid var(--color-border)' }}
       >
         <Button onClick={handleNext} disabled={nextPressed}>
           {nextPressed && isMultiplayer
             ? '⏳ Diğerleri bekleniyor…'
             : isLast
-            ? 'Sonuçları Gör'
-            : 'Sonraki →'}
+            ? 'Sonuçları Gör →'
+            : 'Sonraki Soru →'}
         </Button>
       </div>
     </div>
