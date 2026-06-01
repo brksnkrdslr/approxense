@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 /* Tarayıcının dark mode override'ını engelle — her zaman light */
@@ -14,8 +14,9 @@
   --color-text-primary: #1C1917;
   --color-text-secondary: #78716C;
   --color-text-muted: #A8A29E;
-  --color-accent: #0EA5E9;
-  --color-accent-hover: #0284C7;
+  --color-accent: #6366F1;
+  --color-accent-hover: #4F46E5;
+  --color-reward: #F97316;
   --color-success: #10B981;
   --color-warning: #F59E0B;
   --color-danger: #EF4444;
@@ -25,7 +26,7 @@
 body {
   background-color: var(--color-bg);
   color: var(--color-text-primary);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
 }
@@ -76,6 +77,29 @@ html, .phone-body {
   position: relative;
 }
 
+/* Organik blob animasyonu */
+@keyframes blob-morph {
+  0%, 100% {
+    border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
+    transform: scale(1) rotate(0deg);
+    opacity: 0.18;
+  }
+  33% {
+    border-radius: 45% 55% 40% 60% / 60% 40% 55% 45%;
+    transform: scale(1.04) rotate(4deg);
+    opacity: 0.22;
+  }
+  66% {
+    border-radius: 55% 45% 60% 40% / 45% 55% 45% 55%;
+    transform: scale(0.97) rotate(-3deg);
+    opacity: 0.16;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desktop-blob { animation: none !important; opacity: 0.14 !important; }
+}
+
 /* Desktop: telefon çerçevesi */
 @media (min-width: 600px) {
   .phone-body {
@@ -88,6 +112,43 @@ html, .phone-body {
     min-height: 100dvh;
     align-items: center;
     background-color: #E8E5E1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Organik blob */
+  .phone-outer::before {
+    content: '';
+    position: absolute;
+    width: 560px;
+    height: 560px;
+    background: radial-gradient(ellipse at center, #F97316 0%, rgba(249,115,22,0.35) 45%, transparent 72%);
+    border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: blob-morph 6s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Approxense watermark */
+  .phone-outer::after {
+    content: 'Approxense';
+    position: absolute;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 5.5rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    color: #F97316;
+    opacity: 0.07;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 0;
+    user-select: none;
   }
 
 
@@ -103,6 +164,8 @@ html, .phone-body {
       inset 0 0 0 1px rgba(255,255,255,0.06);
     overflow: hidden;
     flex-shrink: 0;
+    position: relative;
+    z-index: 1;
   }
 
   .phone-notch {

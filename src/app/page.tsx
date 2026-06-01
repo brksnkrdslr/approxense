@@ -10,7 +10,7 @@ export default function LandingPage() {
         <div className="text-center">
           <h1
             className="text-5xl font-semibold tracking-tight mb-3"
-            style={{ color: 'var(--color-text-primary)', fontFamily: 'DM Sans, sans-serif' }}
+            style={{ color: 'var(--color-text-primary)', fontFamily: 'Space Grotesk, sans-serif' }}
           >
             Aproxxense 2
           </h1>
