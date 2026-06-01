@@ -71,6 +71,7 @@ export default function RoomPage() {
     typeof window !== 'undefined' ? getSettings() : DEFAULT_SETTINGS
   );
   const [answerReadyBy, setAnswerReadyBy] = useState<string[]>([]);
+  const [hostPlayerId, setHostPlayerId] = useState<string | null>(null);
   const [myAnswerReady, setMyAnswerReady] = useState(false);
   const [gameDuration, setGameDuration] = useState<number>(DEFAULT_SETTINGS.duration);
   const [timeLeft, setTimeLeft] = useState<number>(DEFAULT_SETTINGS.duration);
@@ -247,9 +248,13 @@ export default function RoomPage() {
         });
       })
       .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState<{ playerId: string; displayName: string; color?: string }>();
+        const state = channel.presenceState<{ playerId: string; displayName: string; color?: string; isCreator?: boolean }>();
         const entries = Object.values(state).flat();
         connectedPlayersRef.current = [...new Set(entries.map((e) => e.playerId))];
+        // Host: önce isCreator olan, yoksa ilk bağlanan (presence sırasına göre ilk)
+        const creatorEntry = entries.find((e) => e.isCreator);
+        const hostId = creatorEntry ? creatorEntry.playerId : entries[0]?.playerId ?? null;
+        setHostPlayerId(hostId);
         setPlayers((prev) => {
           const map = new Map(prev.map((p) => [p.playerId, p]));
           entries.forEach((e) => {
@@ -273,7 +278,8 @@ export default function RoomPage() {
         if (status === 'SUBSCRIBED') {
           // nickname overlay gösteriliyorsa track'i ertele — confirmNickname'de yapılacak
           const currentName = localStorage.getItem('approxense_display_name') || myName;
-          await channel.track({ playerId: pid, displayName: currentName, color: getPlayerColor() });
+          const isCreator = sessionStorage.getItem('approxense_created_room') === roomId;
+          await channel.track({ playerId: pid, displayName: currentName, color: getPlayerColor(), isCreator });
         }
       });
 
@@ -467,6 +473,7 @@ export default function RoomPage() {
         playerId: playerId.current,
         displayName: newName,
         color: nickSelectedColor.hex,
+        isCreator: sessionStorage.getItem('approxense_created_room') === roomId,
       });
     };
     return (
@@ -584,7 +591,7 @@ export default function RoomPage() {
             payload: { settings: s },
           });
         }}
-        isHost={typeof window !== 'undefined' && (sessionStorage.getItem('approxense_created_room') === roomId || connectedPlayersRef.current.length === 0)}
+        isHost={hostPlayerId === playerId.current || connectedPlayersRef.current.length === 0}
         isSolo={connectedPlayersRef.current.length <= 1}
         onEditNickname={() => setShowNickname(true)}
       />
