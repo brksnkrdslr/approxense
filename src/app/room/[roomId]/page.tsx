@@ -444,59 +444,118 @@ export default function RoomPage() {
 
   const cumulativeScore = rounds.reduce((s, r) => s + r.finalScore, 0);
 
+  const NICK_COLORS = [
+    { hue: 0,   hex: '#EF4444' }, { hue: 20,  hex: '#F97316' },
+    { hue: 45,  hex: '#F59E0B' }, { hue: 84,  hex: '#84CC16' },
+    { hue: 142, hex: '#22C55E' }, { hue: 172, hex: '#14B8A6' },
+    { hue: 200, hex: '#0EA5E9' }, { hue: 231, hex: '#6366F1' },
+    { hue: 262, hex: '#A855F7' }, { hue: 291, hex: '#D946EF' },
+    { hue: 330, hex: '#F43F5E' }, { hue: 0,   hex: '#78716C' },
+  ];
+  const [nickSelectedColor, setNickSelectedColor] = useState(NICK_COLORS[7]);
+
   if (showNickname) {
-    const nickColor = hueToColor(nickHue);
+    const displayPreview = nickInput.trim() || 'Oyuncu';
     const confirmNickname = () => {
       const newName = nickInput.trim() || getOrCreateDisplayName();
       if (nickInput.trim()) localStorage.setItem('approxense_display_name', nickInput.trim());
-      savePlayerHue(nickHue);
+      savePlayerHue(nickSelectedColor.hue);
+      setNickHue(nickSelectedColor.hue);
       setMyDisplayName(newName);
       setShowNickname(false);
-      // Kanala yeni isim ve renk ile yeniden track et
       channelRef.current?.track({
         playerId: playerId.current,
         displayName: newName,
-        color: hueToColor(nickHue),
+        color: nickSelectedColor.hex,
       });
     };
     return (
-      <div className="h-full flex flex-col justify-center px-5 gap-5" style={{ backgroundColor: 'var(--color-bg)' }}>
-        <div className="text-center mb-4">
-          <h2 className="text-2xl font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>Takma Ad</h2>
-          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Diğer oyuncular seni böyle görecek</p>
+      <div className="h-full flex flex-col overflow-hidden animate-fade-up" style={{ backgroundColor: 'var(--color-bg)' }}>
+        {/* Avatar önizleme */}
+        <div className="flex flex-col items-center pt-10 pb-6 px-5">
+          <div
+            className="rounded-full flex items-center justify-center font-bold text-white mb-4"
+            style={{
+              width: '72px', height: '72px',
+              backgroundColor: nickSelectedColor.hex,
+              fontSize: '1.75rem',
+              boxShadow: `0 8px 24px ${nickSelectedColor.hex}50`,
+              transition: 'background-color 0.25s, box-shadow 0.25s',
+            }}
+          >
+            {displayPreview.slice(0, 1).toUpperCase()}
+          </div>
+          <p className="text-lg font-semibold" style={{ color: nickSelectedColor.hex, transition: 'color 0.25s', letterSpacing: '-0.02em' }}>
+            {displayPreview}
+          </p>
+          <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>Diğer oyuncular seni böyle görecek</p>
         </div>
 
-        <input
-          autoFocus
-          type="text"
-          value={nickInput}
-          onChange={(e) => setNickInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && confirmNickname()}
-          placeholder="Takma adın"
-          maxLength={20}
-          className="w-full text-center text-2xl font-bold outline-none bg-transparent border-none"
-          style={{ color: nickColor }}
-        />
-
-        <div className="mt-6">
+        <div className="px-5 mb-5">
+          <label className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.12em' }}>
+            Takma Ad
+          </label>
           <input
-            type="range"
-            min={0}
-            max={359}
-            value={nickHue}
-            onChange={(e) => setNickHue(Number(e.target.value))}
-            className="w-full h-3 rounded-full cursor-pointer appearance-none"
+            autoFocus
+            type="text"
+            value={nickInput}
+            onChange={(e) => setNickInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && confirmNickname()}
+            placeholder="Takma adın"
+            maxLength={20}
+            className="w-full rounded-2xl border px-4 text-base font-semibold outline-none"
             style={{
-              background: 'linear-gradient(to right, hsl(0,90%,55%), hsl(30,90%,55%), hsl(60,90%,55%), hsl(90,90%,55%), hsl(120,90%,55%), hsl(150,90%,55%), hsl(180,90%,55%), hsl(210,90%,55%), hsl(240,90%,55%), hsl(270,90%,55%), hsl(300,90%,55%), hsl(330,90%,55%), hsl(359,90%,55%))',
+              height: '52px',
+              backgroundColor: 'var(--color-surface)',
+              borderColor: 'var(--color-border)',
+              color: 'var(--color-text-primary)',
+              caretColor: nickSelectedColor.hex,
             }}
           />
         </div>
 
-        <div className="mt-8">
+        <div className="px-5 mb-6">
+          <label className="block text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.12em' }}>
+            Renk
+          </label>
+          <div className="grid grid-cols-6 gap-3">
+            {NICK_COLORS.map((color) => {
+              const isSelected = nickSelectedColor.hex === color.hex;
+              return (
+                <button
+                  key={color.hex + color.hue}
+                  onClick={() => setNickSelectedColor(color)}
+                  className="rounded-full cursor-pointer flex items-center justify-center"
+                  style={{
+                    width: '100%', aspectRatio: '1',
+                    backgroundColor: color.hex,
+                    boxShadow: isSelected ? `0 0 0 3px var(--color-bg), 0 0 0 5px ${color.hex}` : 'none',
+                    transform: isSelected ? 'scale(1.15)' : 'scale(1)',
+                    transition: 'transform 0.2s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s',
+                  }}
+                >
+                  {isSelected && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="px-5 mt-auto pb-8">
           <button
             onClick={confirmNickname}
-            className="w-full rounded-[12px] text-base font-medium"
-            style={{ height: '52px', backgroundColor: 'var(--color-accent)', color: 'white' }}
+            className="w-full rounded-2xl text-base font-semibold text-white cursor-pointer active:scale-95"
+            style={{
+              height: '54px',
+              backgroundColor: nickSelectedColor.hex,
+              boxShadow: `0 4px 20px ${nickSelectedColor.hex}40`,
+              transition: 'background-color 0.25s, box-shadow 0.25s, transform 0.1s',
+              letterSpacing: '-0.01em',
+            }}
           >
             Odaya Gir
           </button>

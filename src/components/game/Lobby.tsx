@@ -28,6 +28,23 @@ interface LobbyProps {
   isSolo: boolean;
 }
 
+function CopyIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 6L9 17l-5-5"/>
+    </svg>
+  );
+}
+
 export default function Lobby({
   players,
   countdown,
@@ -41,151 +58,217 @@ export default function Lobby({
   isHost,
   isSolo,
 }: LobbyProps) {
+  const [copied, setCopied] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const router = useRouter();
+
   const readyCount = players.filter((p) => p.isReady).length;
   const canStartNow = readyCount > players.length / 2;
 
   async function shareLink() {
-    // 1. Native share (HTTPS'de çalışır)
     try {
       if (navigator.share) {
-        await navigator.share({
-          title: 'Approxense',
-          text: 'Benimle Approxense oyna!',
-          url: joinUrl,
-        });
+        await navigator.share({ title: 'Approxense', text: 'Benimle Approxense oyna!', url: joinUrl });
         return;
       }
-    } catch {
-      // iptal edildi veya desteklenmiyor
-    }
-
-    // 2. Clipboard API (HTTPS'de çalışır)
+    } catch {}
     try {
       await navigator.clipboard.writeText(joinUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      return;
     } catch {
-      // HTTP'de çalışmıyor, execCommand'a dön
+      const el = document.createElement('input');
+      el.value = joinUrl;
+      Object.assign(el.style, { position: 'fixed', top: '0', left: '0', opacity: '0', fontSize: '16px' });
+      el.readOnly = true;
+      document.body.appendChild(el);
+      el.focus();
+      el.setSelectionRange(0, joinUrl.length);
+      try { document.execCommand('copy'); } catch {}
+      document.body.removeChild(el);
     }
-
-    // 3. execCommand fallback (HTTP dahil her yerde çalışır)
-    const el = document.createElement('input');
-    el.value = joinUrl;
-    el.style.position = 'fixed';
-    el.style.top = '0';
-    el.style.left = '0';
-    el.style.opacity = '0';
-    el.style.fontSize = '16px'; // iOS zoom'u önle
-    el.readOnly = true;
-    document.body.appendChild(el);
-    el.focus();
-    el.setSelectionRange(0, joinUrl.length);
-    try {
-      document.execCommand('copy');
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {}
-    document.body.removeChild(el);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
   }
 
-  const [copied, setCopied] = useState(false);
-  const router = useRouter();
+  const shortUrl = joinUrl.replace(/^https?:\/\//, '');
 
   return (
-    <div className="px-5 pt-6 pb-8 flex flex-col gap-6">
+    <div className="px-5 pt-5 pb-8 flex flex-col gap-5 animate-fade-up">
+
+      {/* Üst bar */}
       <div className="flex items-center justify-between">
         <button
           onClick={() => router.push('/')}
-          className="text-sm px-2 py-1 rounded-lg"
+          className="flex items-center gap-1.5 text-sm cursor-pointer"
           style={{ color: 'var(--color-text-muted)' }}
         >
-          ← Ana Sayfa
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
+          Geri
         </button>
         {countdown !== null && (
-          <div className="flex items-center gap-1">
-            <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-              Başlıyor:
-            </span>
-            <span className="text-xl font-mono font-medium" style={{ color: 'var(--color-accent)' }}>
-              {countdown}s
-            </span>
+          <div
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full"
+            style={{ backgroundColor: 'rgba(99,102,241,0.1)', color: 'var(--color-accent)' }}
+          >
+            <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--color-accent)' }} />
+            <span className="text-sm font-mono font-semibold">{countdown}s</span>
           </div>
         )}
       </div>
 
+      {/* Oyuncular */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.12em' }}>
+            Oyuncular
+          </p>
+          <p className="text-xs font-mono" style={{ color: 'var(--color-text-muted)' }}>
+            {readyCount}/{players.length} hazır
+          </p>
+        </div>
+
+        <div
+          className="rounded-2xl border divide-y overflow-hidden"
+          style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        >
+          {players.map((player, i) => {
+            const isMe = player.playerId === currentPlayerId;
+            const initial = (player.displayName || `O${i + 1}`).slice(0, 1).toUpperCase();
+            return (
+              <div key={player.playerId} className="flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3">
+                  {/* Avatar */}
+                  <div
+                    className="rounded-full flex items-center justify-center font-bold text-white flex-shrink-0"
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      backgroundColor: player.color,
+                      fontSize: '0.875rem',
+                      boxShadow: `0 2px 8px ${player.color}40`,
+                    }}
+                  >
+                    {initial}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold leading-tight" style={{ color: player.color }}>
+                      {player.displayName || `Oyuncu ${i + 1}`}
+                      {isMe && <span className="ml-1.5 text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>sen</span>}
+                    </p>
+                  </div>
+                </div>
+                {/* Ready badge */}
+                <div
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
+                  style={{
+                    backgroundColor: player.isReady ? 'rgba(16,185,129,0.1)' : 'var(--color-surface-alt)',
+                    color: player.isReady ? 'var(--color-success)' : 'var(--color-text-muted)',
+                    transition: 'background-color 0.2s, color 0.2s',
+                  }}
+                >
+                  {player.isReady ? (
+                    <>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6L9 17l-5-5"/>
+                      </svg>
+                      Hazır
+                    </>
+                  ) : 'Bekliyor'}
+                </div>
+              </div>
+            );
+          })}
+
+          {players.length === 0 && (
+            <div className="px-4 py-6 text-center">
+              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Bağlanılıyor…</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Davet et */}
+      {!isSolo && (
+        <div
+          className="rounded-2xl border p-4"
+          style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        >
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.12em' }}>
+            Arkadaşını Davet Et
+          </p>
+          <div className="flex items-center gap-2">
+            <div
+              className="flex-1 rounded-xl px-3 py-2.5 truncate text-xs font-mono min-w-0"
+              style={{ backgroundColor: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)' }}
+            >
+              {shortUrl}
+            </div>
+            <button
+              onClick={shareLink}
+              className="flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-semibold flex-shrink-0 cursor-pointer"
+              style={{
+                backgroundColor: copied ? 'rgba(16,185,129,0.1)' : 'rgba(99,102,241,0.1)',
+                color: copied ? 'var(--color-success)' : 'var(--color-accent)',
+                transition: 'background-color 0.2s, color 0.2s',
+                minWidth: '90px',
+                justifyContent: 'center',
+              }}
+            >
+              {copied ? <CheckIcon /> : <CopyIcon />}
+              {copied ? 'Kopyalandı' : 'Kopyala'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Ayarlar */}
       <div
-        className="rounded-[16px] border divide-y"
+        className="rounded-2xl border overflow-hidden"
         style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
       >
-        {players.map((player, i) => {
-          const isMe = player.playerId === currentPlayerId;
-          return (
-            <div key={player.playerId} className="flex items-center justify-between px-4 py-3">
-              <div className="flex items-center gap-2">
-                <span
-                  className="rounded-sm flex-shrink-0"
-                  style={{ width: '10px', height: '10px', backgroundColor: player.color }}
-                />
-                <span
-                  className="text-sm font-bold"
-                  style={{ color: player.color }}
-                >
-                  {player.displayName || `Oyuncu ${i + 1}`}
-                  {isMe && (
-                    <span className="ml-1 text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>
-                      (Sen)
-                    </span>
-                  )}
-                </span>
-              </div>
-              <span
-                className="text-xs px-2 py-1 rounded-full"
-                style={{
-                  backgroundColor: player.isReady ? 'rgba(16,185,129,0.1)' : 'var(--color-surface-alt)',
-                  color: player.isReady ? 'var(--color-success)' : 'var(--color-text-muted)',
-                }}
+        <button
+          className="w-full flex items-center justify-between px-4 py-3.5 cursor-pointer"
+          onClick={() => isHost && setSettingsOpen((v) => !v)}
+          style={{ opacity: !isHost && !settingsOpen ? 0.7 : 1 }}
+        >
+          <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+            Oyun Ayarları
+          </span>
+          <div className="flex items-center gap-2">
+            {!isHost && (
+              <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Host ayarlıyor</span>
+            )}
+            {isHost && (
+              <svg
+                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                style={{ transform: settingsOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', color: 'var(--color-text-muted)' }}
               >
-                {player.isReady ? 'Hazır' : 'Bekleniyor'}
-              </span>
-            </div>
-          );
-        })}
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            )}
+          </div>
+        </button>
 
-        {players.length === 0 && (
-          <p className="px-4 py-4 text-sm text-center" style={{ color: 'var(--color-text-muted)' }}>
-            Henüz oyuncu yok
-          </p>
+        {settingsOpen && (
+          <div className="px-4 pb-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
+            <div className="pt-4">
+              <SettingsPanel settings={settings} onChange={onSettingsChange} readonly={!isHost} />
+            </div>
+          </div>
         )}
       </div>
 
-      <button
-        onClick={shareLink}
-        className="w-full rounded-[12px] border px-4 py-4 text-sm font-medium flex items-center justify-center gap-2"
-        style={{
-          backgroundColor: copied ? 'rgba(16,185,129,0.08)' : 'var(--color-surface)',
-          borderColor: copied ? 'var(--color-success)' : 'var(--color-border)',
-          color: copied ? 'var(--color-success)' : 'var(--color-text-primary)',
-        }}
-      >
-        <span>{copied ? '✓' : '🔗'}</span>
-        <span>{copied ? 'Link kopyalandı!' : 'Yeni oyuncu davet et'}</span>
-      </button>
-
-      {/* Ayarlar */}
-      <div className="rounded-[16px] border px-4 py-4" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)' }}>
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Oyun Ayarları</span>
-          {!isHost && <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Host ayarlıyor</span>}
-        </div>
-        <SettingsPanel settings={settings} onChange={onSettingsChange} readonly={!isHost} />
-      </div>
-
+      {/* Butonlar */}
       <div className="flex flex-col gap-3">
         <Button onClick={onReady} variant={isReady ? 'secondary' : 'primary'}>
-          {isSolo ? 'Tek Başına Oyna' : isReady ? '⏳ Bekleniyor… (İptal için bas)' : 'Hazır'}
+          {isSolo
+            ? 'Tek Başına Oyna'
+            : isReady
+            ? 'Hazır — İptal et'
+            : 'Hazır'}
         </Button>
-        {canStartNow && (
+        {canStartNow && !isSolo && (
           <Button onClick={onStartNow} variant="secondary">
             Hemen Başla
           </Button>
