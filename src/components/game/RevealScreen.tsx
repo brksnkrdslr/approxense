@@ -15,7 +15,7 @@ interface RevealScreenProps {
   onNext: () => void;
   currentPlayerId?: string;
   leaderboard?: { playerId: string; displayName: string | null; score: number }[];
-  roundAnswers?: { playerId: string; displayName: string | null; guessedValue: number | null; finalScore: number }[];
+  roundAnswers?: { playerId: string; displayName: string | null; color?: string; guessedValue: number | null; finalScore: number }[];
   isMultiplayer?: boolean;
 }
 
@@ -183,18 +183,25 @@ export default function RevealScreen({
           <div className="flex flex-col gap-2">
             {[...roundAnswers].sort((a, b) => b.finalScore - a.finalScore).map((a, i) => {
               const isMe = a.playerId === currentPlayerId;
+              const playerColor = a.color ?? 'var(--color-accent)';
+              const scoreCol = getScoreColor(a.finalScore);
               return (
-                <div key={a.playerId} className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-mono w-4 shrink-0" style={{ color: 'var(--color-text-muted)' }}>{i + 1}</span>
-                  <span className="text-xs w-20 truncate shrink-0 font-medium" style={{ color: isMe ? 'var(--color-accent)' : 'var(--color-text-secondary)' }}>
-                    {a.displayName ?? 'Oyuncu'}{isMe ? ' (Sen)' : ''}
-                  </span>
-                  <div className="flex-1 text-right">
-                    <span className="text-sm font-mono" style={{ color: 'var(--color-text-primary)' }}>
-                      {a.guessedValue !== null ? a.guessedValue.toLocaleString('tr-TR') : '—'}
-                    </span>
+                <div key={a.playerId} className="flex items-center gap-3">
+                  {/* Sıra */}
+                  <span className="text-xs font-mono w-4 shrink-0 text-center" style={{ color: 'var(--color-text-muted)' }}>{i + 1}</span>
+                  {/* Avatar */}
+                  <div
+                    className="rounded-full flex items-center justify-center font-bold text-white flex-shrink-0"
+                    style={{ width: '28px', height: '28px', backgroundColor: playerColor, fontSize: '0.7rem', boxShadow: `0 1px 6px ${playerColor}50` }}
+                  >
+                    {(a.displayName ?? 'O').slice(0, 1).toUpperCase()}
                   </div>
-                  <span className="text-sm font-mono font-semibold w-10 text-right shrink-0" style={{ color: 'var(--color-accent)' }}>
+                  {/* İsim */}
+                  <span className="text-sm font-semibold flex-1 truncate" style={{ color: playerColor, fontFamily: 'DM Sans, sans-serif' }}>
+                    {a.displayName ?? 'Oyuncu'}{isMe ? <span className="ml-1 text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>(sen)</span> : ''}
+                  </span>
+                  {/* Puan */}
+                  <span className="text-sm font-mono font-semibold shrink-0" style={{ color: scoreCol }}>
                     {formatScore(a.finalScore)}
                   </span>
                 </div>

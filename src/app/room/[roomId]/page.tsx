@@ -76,7 +76,7 @@ export default function RoomPage() {
   const [gameDuration, setGameDuration] = useState<number>(DEFAULT_SETTINGS.duration);
   const [timeLeft, setTimeLeft] = useState<number>(DEFAULT_SETTINGS.duration);
   const inputValueRef = useRef('');
-  const [roundAnswers, setRoundAnswers] = useState<{ playerId: string; displayName: string | null; guessedValue: number | null; finalScore: number }[]>([]);
+  const [roundAnswers, setRoundAnswers] = useState<{ playerId: string; displayName: string | null; color?: string; guessedValue: number | null; finalScore: number }[]>([]);
   const [myDisplayName, setMyDisplayName] = useState<string>(() =>
     typeof window !== 'undefined' ? getOrCreateDisplayName() : ''
   );
@@ -190,7 +190,7 @@ export default function RoomPage() {
         // startGame'i burada doğrudan çağırmak için flag kullanıyoruz
         setShouldStart(true);
       })
-      .on('broadcast', { event: 'player_answer' }, ({ payload }: { payload: { playerId: string; displayName: string | null; guessedValue: number | null; finalScore: number } }) => {
+      .on('broadcast', { event: 'player_answer' }, ({ payload }: { payload: { playerId: string; displayName: string | null; color?: string; guessedValue: number | null; finalScore: number } }) => {
         setRoundAnswers((prev) => {
           const next = prev.filter((a) => a.playerId !== payload.playerId);
           return [...next, payload];
@@ -292,6 +292,27 @@ export default function RoomPage() {
   // inputValue ve submitGuess ref'lerini güncel tut (broadcast closure'ları için)
   useEffect(() => { inputValueRef.current = inputValue; }, [inputValue]);
   useEffect(() => { submitGuessRef.current = submitGuess; });
+
+  // Pencere kapanınca hazır durumunu iptal et
+  const isReadyRef = useRef(false);
+  useEffect(() => { isReadyRef.current = isReady; }, [isReady]);
+  useEffect(() => {
+    function cancelReady() {
+      if (!isReadyRef.current) return;
+      channelRef.current?.send({
+        type: 'broadcast',
+        event: 'restart_unready',
+        payload: { playerId: playerId.current },
+      });
+    }
+    window.addEventListener('beforeunload', cancelReady);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') cancelReady();
+    });
+    return () => {
+      window.removeEventListener('beforeunload', cancelReady);
+    };
+  }, []);
 
   // 3-2-1 geri sayım
   useEffect(() => {
@@ -429,7 +450,7 @@ export default function RoomPage() {
       channelRef.current?.send({
         type: 'broadcast',
         event: 'player_answer',
-        payload: { playerId: playerId.current, displayName: myDisplayName, guessedValue: guess, finalScore: data.finalScore },
+        payload: { playerId: playerId.current, displayName: myDisplayName, color: myColor, guessedValue: guess, finalScore: data.finalScore },
       });
     } catch {
       // show reveal with 0
