@@ -89,6 +89,17 @@ export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ');
 }
 
+/** Büyük sayıları kısa Türkçe formatla gösterir: 60.000.000.000 → "60 mlyr" */
+export function shortNumber(n: number | null): string {
+  if (n === null) return '—';
+  const abs = Math.abs(n);
+  if (abs >= 1_000_000_000_000) return `${+(abs / 1_000_000_000_000).toPrecision(3)} try`;
+  if (abs >= 1_000_000_000)     return `${+(abs / 1_000_000_000).toPrecision(3)} mlyr`;
+  if (abs >= 1_000_000)         return `${+(abs / 1_000_000).toPrecision(3)} mln`;
+  if (abs >= 10_000)            return `${+(abs / 1_000).toPrecision(3)}k`;
+  return n.toLocaleString('tr-TR');
+}
+
 export function numberToTurkish(n: number): string {
   if (!n || n <= 0) return '';
   const units: [number, string][] = [

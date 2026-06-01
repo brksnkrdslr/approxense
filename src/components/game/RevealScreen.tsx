@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ScoreResult, QuestionPublic } from '@/types';
-import { formatScore, numberToTurkish } from '@/lib/utils';
+import { formatScore, numberToTurkish, shortNumber } from '@/lib/utils';
 import Button from '@/components/ui/Button';
 
 interface RevealScreenProps {
@@ -186,7 +186,7 @@ export default function RevealScreen({
           <div className="flex items-center gap-3 pb-1 border-b mb-1" style={{ borderColor: 'var(--color-border)' }}>
             <span className="w-4 shrink-0" />
             <span className="text-xs font-medium flex-1" style={{ color: 'var(--color-text-secondary)' }}>İsim</span>
-            <span className="text-xs font-medium w-16 text-right shrink-0" style={{ color: 'var(--color-text-secondary)' }}>Cevap</span>
+            <span className="text-xs font-medium w-20 text-right shrink-0" style={{ color: 'var(--color-text-secondary)' }}>Cevap</span>
             <span className="text-xs font-medium w-12 text-right shrink-0" style={{ color: 'var(--color-text-secondary)' }}>Puan</span>
           </div>
           <div className="flex flex-col gap-2">
@@ -211,8 +211,8 @@ export default function RevealScreen({
                     {a.displayName ?? 'Oyuncu'}{isMe ? <span className="ml-1 text-xs font-normal" style={{ color: 'var(--color-text-secondary)' }}>(sen)</span> : ''}
                   </span>
                   {/* Cevap */}
-                  <span className="text-sm font-mono w-16 text-right shrink-0" style={{ color: 'var(--color-text-primary)' }}>
-                    {a.guessedValue !== null ? a.guessedValue.toLocaleString('tr-TR') : '—'}
+                  <span className="text-sm font-mono w-20 text-right shrink-0" style={{ color: 'var(--color-text-primary)' }}>
+                    {shortNumber(a.guessedValue)}
                   </span>
                   {/* Puan */}
                   <span className="text-sm font-mono font-bold w-12 text-right shrink-0" style={{ color: scoreCol }}>
