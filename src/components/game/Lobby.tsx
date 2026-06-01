@@ -185,42 +185,50 @@ export default function Lobby({
               <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Bağlanılıyor…</p>
             </div>
           )}
+
+          {/* Davet slot */}
+          <button
+            onClick={shareLink}
+            className="w-full flex items-center justify-between px-4 py-3 cursor-pointer"
+            style={{
+              backgroundColor: copied ? 'rgba(16,185,129,0.06)' : 'transparent',
+              transition: 'background-color 0.2s',
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="rounded-full flex items-center justify-center flex-shrink-0"
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  backgroundColor: copied ? 'rgba(16,185,129,0.12)' : 'var(--color-surface-alt)',
+                  border: `2px dashed ${copied ? 'var(--color-success)' : 'var(--color-border)'}`,
+                  transition: 'background-color 0.2s, border-color 0.2s',
+                }}
+              >
+                {copied ? (
+                  <CheckIcon />
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-text-muted)' }}>
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
+                )}
+              </div>
+              <span
+                className="text-sm font-medium"
+                style={{ color: copied ? 'var(--color-success)' : 'var(--color-text-muted)', transition: 'color 0.2s' }}
+              >
+                {copied ? 'Link kopyalandı!' : 'Oyuncu davet et'}
+              </span>
+            </div>
+            {!copied && (
+              <span className="text-xs font-mono" style={{ color: 'var(--color-text-muted)' }}>
+                link kopyala
+              </span>
+            )}
+          </button>
         </div>
       </div>
-
-      {/* Davet et */}
-      {!isSolo && (
-        <div
-          className="rounded-2xl border p-4"
-          style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-        >
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.12em' }}>
-            Arkadaşını Davet Et
-          </p>
-          <div className="flex items-center gap-2">
-            <div
-              className="flex-1 rounded-xl px-3 py-2.5 truncate text-xs font-mono min-w-0"
-              style={{ backgroundColor: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)' }}
-            >
-              {shortUrl}
-            </div>
-            <button
-              onClick={shareLink}
-              className="flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-semibold flex-shrink-0 cursor-pointer"
-              style={{
-                backgroundColor: copied ? 'rgba(16,185,129,0.1)' : 'rgba(99,102,241,0.1)',
-                color: copied ? 'var(--color-success)' : 'var(--color-accent)',
-                transition: 'background-color 0.2s, color 0.2s',
-                minWidth: '90px',
-                justifyContent: 'center',
-              }}
-            >
-              {copied ? <CheckIcon /> : <CopyIcon />}
-              {copied ? 'Kopyalandı' : 'Kopyala'}
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Ayarlar */}
       <div
