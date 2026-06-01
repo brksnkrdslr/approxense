@@ -769,10 +769,6 @@ export default function RoomPage() {
           nextPressedBy={nextPressedBy}
           playerReactions={playerReactions}
           onReaction={(emoji) => {
-            setPlayerReactions((prev) => ({
-              ...prev,
-              [playerId.current]: { emoji, seq: (prev[playerId.current]?.seq ?? 0) + 1 },
-            }));
             channelRef.current?.send({
               type: 'broadcast',
               event: 'player_reaction',
