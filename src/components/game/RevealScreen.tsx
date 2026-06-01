@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { ScoreResult, QuestionPublic } from '@/types';
 import { formatScore, numberToTurkish } from '@/lib/utils';
 import Button from '@/components/ui/Button';
@@ -64,11 +64,15 @@ export default function RevealScreen({
   const [nextPressed, setNextPressed] = useState(false);
   const [lastReaction, setLastReaction] = useState<string | null>(null);
   const [pulseTrigger, setPulseTrigger] = useState(0);
+  const reactionCooldown = useRef(false);
   const isLast = round === total;
   const scoreColor = getScoreColor(scoreResult.finalScore);
   const scoreLabel = getScoreLabel(scoreResult.finalScore);
 
   function handleReaction(emoji: string) {
+    if (reactionCooldown.current) return;
+    reactionCooldown.current = true;
+    setTimeout(() => { reactionCooldown.current = false; }, 800);
     setLastReaction(emoji);
     setPulseTrigger(n => n + 1);
     onReaction?.(emoji);
