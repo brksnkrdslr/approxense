@@ -100,8 +100,8 @@ export default function Lobby({
       <div className="flex items-center justify-between">
         <button
           onClick={() => router.push('/')}
-          className="flex items-center gap-1.5 text-sm cursor-pointer"
-          style={{ color: 'var(--color-text-muted)' }}
+          className="flex items-center gap-1.5 text-sm cursor-pointer min-h-[44px] px-1"
+          style={{ color: 'var(--color-text-secondary)' }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 5l-7 7 7 7"/>
@@ -255,7 +255,7 @@ export default function Lobby({
           </span>
           <div className="flex items-center gap-2">
             {!isHost && (
-              <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Host ayarlıyor</span>
+              <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Host ayarlıyor</span>
             )}
             {isHost && (
               <svg

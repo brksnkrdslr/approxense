@@ -177,7 +177,7 @@ export default function Keypad({
                   className="rounded-xl border font-mono font-semibold disabled:opacity-40 flex items-center justify-center cursor-pointer select-none"
                   style={{
                     minHeight: '60px',
-                    fontSize: isThousand ? '0.85rem' : '1.3rem',
+                    fontSize: isThousand ? '0.92rem' : '1.3rem',
                     backgroundColor: isBackspace
                       ? isPressed ? 'rgba(239,68,68,0.16)' : 'rgba(239,68,68,0.06)'
                       : isPressed

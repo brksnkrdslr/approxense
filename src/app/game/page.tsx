@@ -167,8 +167,8 @@ export default function GamePage() {
           <div className="px-5 pt-5">
             <button
               onClick={() => router.push('/')}
-              className="text-sm px-2 py-1 rounded-lg"
-              style={{ color: 'var(--color-text-muted)' }}
+              className="text-sm px-2 rounded-lg min-h-[44px] cursor-pointer"
+              style={{ color: 'var(--color-text-secondary)' }}
             >
               ← Menü
             </button>

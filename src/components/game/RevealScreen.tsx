@@ -64,7 +64,7 @@ export default function RevealScreen({
   }
 
   return (
-    <div className="px-5 pt-5 pb-48 flex flex-col gap-4 overflow-y-auto animate-fade-in" style={{ height: '100%' }}>
+    <div className="px-5 pt-5 pb-32 flex flex-col gap-4 overflow-y-auto animate-fade-in" style={{ height: '100%' }}>
 
       {/* Skor büyük — en üstte */}
       <div
@@ -96,7 +96,7 @@ export default function RevealScreen({
         className="rounded-2xl border p-4 flex flex-col gap-4 animate-slide-up delay-100"
         style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
       >
-        <p className="text-sm leading-snug text-center" style={{ color: 'var(--color-text-secondary)' }}>
+        <p className="text-base leading-snug text-center" style={{ color: 'var(--color-text-primary)' }}>
           {renderQuestionText(question.question_text)}
         </p>
 
@@ -160,8 +160,8 @@ export default function RevealScreen({
                 key={i}
                 className="rounded-full"
                 style={{
-                  width: '6px',
-                  height: '6px',
+                  width: '8px',
+                  height: '8px',
                   backgroundColor: i < round ? 'var(--color-accent)' : 'var(--color-border)',
                   transition: 'background-color 0.3s',
                 }}
@@ -203,13 +203,13 @@ export default function RevealScreen({
                   {/* Tahmin + Puan */}
                   <div className="flex flex-col items-end shrink-0 gap-0.5">
                     <div className="flex items-center gap-1">
-                      <span className="text-[10px] font-medium" style={{ color: 'var(--color-text-muted)' }}>cevap</span>
+                      <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>cevap</span>
                       <span className="text-xs font-mono font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                         {a.guessedValue !== null ? a.guessedValue.toLocaleString('tr-TR') : '—'}
                       </span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <span className="text-[10px] font-medium" style={{ color: 'var(--color-text-muted)' }}>puan</span>
+                      <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>puan</span>
                       <span className="text-sm font-mono font-bold" style={{ color: scoreCol }}>
                         {formatScore(a.finalScore)}
                       </span>

@@ -88,7 +88,7 @@ export default function LandingPage() {
 
       {/* ── Başlık (üstte) ── */}
       <div className="relative z-10 flex flex-col items-center gap-2 animate-fade-up">
-        <div className="text-xs font-mono uppercase" style={{ color: 'var(--color-reward)', letterSpacing: '0.18em' }}>
+        <div className="text-xs font-mono uppercase" style={{ color: 'var(--color-text-secondary)', letterSpacing: '0.18em' }}>
           Tahmin Zekası
         </div>
         <h1
@@ -113,7 +113,7 @@ export default function LandingPage() {
           style={{
             ...teaserStyle,
             backgroundColor: `${accentColor}0A`,
-            border: `1.5px solid ${accentColor}20`,
+            border: `1.5px solid ${accentColor}35`,
           }}
         >
           <p
@@ -143,14 +143,14 @@ export default function LandingPage() {
           {CATEGORIES.map((cat) => (
             <span
               key={cat}
-              className="text-xs font-medium px-3 py-1 rounded-full border"
+              className="text-xs font-medium px-3 py-1.5 rounded-full border"
               style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}
             >
               {cat}
             </span>
           ))}
         </div>
-        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
           5 kategori · 10 soru · 20 saniye
         </p>
       </div>

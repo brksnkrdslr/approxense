@@ -68,8 +68,8 @@ export default function QuestionCard({ question, round, total, inputValue }: Que
           {catLabel}
         </span>
         <span
-          className="text-xs font-mono"
-          style={{ color: 'var(--color-text-muted)' }}
+          className="text-sm font-mono"
+          style={{ color: 'var(--color-text-secondary)' }}
         >
           {round} / {total}
         </span>

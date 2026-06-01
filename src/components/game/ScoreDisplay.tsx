@@ -65,7 +65,7 @@ export default function ScoreDisplay({ totalScore, rounds }: ScoreDisplayProps) 
         >
           {formatScore(displayScore)}
         </p>
-        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
           100 üzerinden
         </p>
       </div>
@@ -97,13 +97,13 @@ export default function ScoreDisplay({ totalScore, rounds }: ScoreDisplayProps) 
               </span>
               <div className="flex-1 min-w-0">
                 <p
-                  className="text-xs truncate mb-1"
+                  className="text-sm truncate mb-1"
                   style={{ color: 'var(--color-text-secondary)' }}
                 >
                   {round.questionText.replace(/\*\*/g, '').slice(0, 38)}
                   {round.questionText.length > 38 ? '…' : ''}
                 </p>
-                <div className="w-full h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--color-border)' }}>
+                <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--color-border)' }}>
                   <div
                     className="h-full rounded-full"
                     style={{

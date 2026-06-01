@@ -63,8 +63,8 @@ export default function PlayPage() {
       <div className="flex items-center px-5 pt-5 pb-2">
         <button
           onClick={() => router.push('/')}
-          className="flex items-center gap-1.5 text-sm cursor-pointer"
-          style={{ color: 'var(--color-text-muted)' }}
+          className="flex items-center gap-1.5 text-sm cursor-pointer min-h-[44px] px-1"
+          style={{ color: 'var(--color-text-secondary)' }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 5l-7 7 7 7"/>
@@ -101,14 +101,14 @@ export default function PlayPage() {
         >
           {displayName}
         </p>
-        <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+        <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
           Diğer oyuncular seni böyle görecek
         </p>
       </div>
 
       {/* İsim input */}
       <div className="px-5 mb-6 animate-fade-up" style={{ animationDelay: '0.1s' }}>
-        <label className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.12em' }}>
+        <label className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--color-text-secondary)', letterSpacing: '0.12em' }}>
           Takma Ad
         </label>
         <input
@@ -136,7 +136,7 @@ export default function PlayPage() {
 
       {/* Renk seçimi */}
       <div className="px-5 mb-8 animate-fade-up" style={{ animationDelay: '0.2s' }}>
-        <label className="block text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.12em' }}>
+        <label className="block text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--color-text-secondary)', letterSpacing: '0.12em' }}>
           Renk
         </label>
         <div className="grid grid-cols-6 gap-3">
@@ -153,7 +153,7 @@ export default function PlayPage() {
                   aspectRatio: '1',
                   backgroundColor: color.hex,
                   boxShadow: isSelected ? `0 0 0 3px var(--color-bg), 0 0 0 5px ${color.hex}` : 'none',
-                  transform: isSelected ? 'scale(1.15)' : 'scale(1)',
+                  transform: isSelected ? 'scale(1.1)' : 'scale(1)',
                   transition: 'transform 0.2s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s',
                 }}
               >
