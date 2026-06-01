@@ -130,6 +130,10 @@ export default function RoomPage() {
       .on('broadcast', { event: 'game_start' }, async ({ payload }) => {
         setSessionId(payload.sessionId);
         if (payload.duration) setGameDuration(payload.duration);
+        // Ready state'leri burada sıfırla — phase değişmeden önce değil
+        setIsReady(false);
+        setPlayers((prev) => prev.map((p) => ({ ...p, isReady: false })));
+        setReadyPlayerIds([]);
         const res = await fetch(`/api/game/session?id=${payload.sessionId}`);
         if (!res.ok) return;
         const data = await res.json();
@@ -151,14 +155,12 @@ export default function RoomPage() {
           if (allReady) {
             next.clear();
             // Herkes hazır — oyunu sıfırla ve başlat
+            // (isReady / players ready state'leri game_start handler'da sıfırlanır, burada değil)
             setRound(0);
             setRounds([]);
             setLeaderboard([]);
             setScoreResult(null);
             setInputValue('');
-            setIsReady(false);
-            setPlayers((prev) => prev.map((p) => ({ ...p, isReady: false })));
-            setReadyPlayerIds([]);
             submitLock.current = false;
             // Sadece ilk basan (en küçük playerId) start'ı çağırır — race condition önleme
             const sorted = [...connectedPlayersRef.current].sort();
@@ -203,7 +205,7 @@ export default function RoomPage() {
             connectedPlayersRef.current.every((id) => next.includes(id));
           if (allReady) {
             setAnswerReadyBy([]);
-            setMyAnswerReady(false);
+            // setMyAnswerReady(false) burada YOK — phase 'reveal'e geçince zaten sıfırlanır
             submitGuessRef.current(inputValueRef.current);
           }
           return allReady ? [] : next;
@@ -632,58 +634,70 @@ export default function RoomPage() {
     );
   }
 
-  if (phase === 'lobby') {
+  if (phase === 'lobby' || phase === 'countdown') {
+    const isCountingDown = phase === 'countdown';
     return (
-      <div style={{ height: '100%', overflowY: 'auto', position: 'relative', backgroundColor: 'var(--color-bg)' }}>
-      <Lobby
-        players={players}
-        countdown={countdown}
-        currentPlayerId={playerId.current}
-        isReady={isReady}
-        onReady={handleReady}
-        onStartNow={handleStartNow}
-        joinUrl={joinUrl}
-        settings={roomSettings}
-        onSettingsChange={(s) => {
-          setRoomSettings(s);
-          channelRef.current?.send({
-            type: 'broadcast',
-            event: 'settings_update',
-            payload: { settings: s },
-          });
-        }}
-        isHost={hostPlayerId === playerId.current || connectedPlayersRef.current.length === 0}
-        isSolo={connectedPlayersRef.current.length <= 1}
-        onEditNickname={() => setShowNickname(true)}
-      />
-      </div>
-    );
-  }
+      <div style={{ height: '100%', position: 'relative', backgroundColor: 'var(--color-bg)' }}>
+        {/* Lobby içeriği — countdown sırasında blurlanır */}
+        <div
+          style={{
+            height: '100%',
+            overflowY: isCountingDown ? 'hidden' : 'auto',
+            filter: isCountingDown ? 'blur(5px)' : 'none',
+            opacity: isCountingDown ? 0.35 : 1,
+            pointerEvents: isCountingDown ? 'none' : 'auto',
+            transition: 'filter 0.3s ease, opacity 0.3s ease',
+          }}
+        >
+          <Lobby
+            players={players}
+            countdown={countdown}
+            currentPlayerId={playerId.current}
+            isReady={isReady}
+            onReady={handleReady}
+            onStartNow={handleStartNow}
+            joinUrl={joinUrl}
+            settings={roomSettings}
+            onSettingsChange={(s) => {
+              setRoomSettings(s);
+              channelRef.current?.send({
+                type: 'broadcast',
+                event: 'settings_update',
+                payload: { settings: s },
+              });
+            }}
+            isHost={hostPlayerId === playerId.current || connectedPlayersRef.current.length === 0}
+            isSolo={connectedPlayersRef.current.length <= 1}
+            onEditNickname={() => setShowNickname(true)}
+          />
+        </div>
 
-  if (phase === 'countdown' && questions.length > 0) {
-    return (
-      <div style={{ height: '100%', overflow: 'hidden', position: 'relative', backgroundColor: 'var(--color-bg)' }}>
-        {/* Arka planda blur'lu soru */}
-        <div style={{ filter: 'blur(6px)', opacity: 0.4, pointerEvents: 'none' }}>
-          <div className="flex items-center justify-end px-5 pt-5">
-            <div className="text-3xl font-mono font-medium w-10 text-right" style={{ color: 'var(--color-text-primary)' }}>
-              {20}
+        {/* Geri sayım overlay — sadece countdown phase'inde */}
+        {isCountingDown && (
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3"
+            style={{ pointerEvents: 'none' }}
+          >
+            <p
+              className="text-sm font-semibold uppercase tracking-widest"
+              style={{ color: 'var(--color-text-secondary)', letterSpacing: '0.14em' }}
+            >
+              Hazır mısın?
+            </p>
+            <div
+              className="font-mono font-bold animate-score-pop"
+              key={startCountdown}
+              style={{
+                fontSize: '8rem',
+                lineHeight: 1,
+                color: 'var(--color-text-primary)',
+                letterSpacing: '-0.04em',
+              }}
+            >
+              {startCountdown}
             </div>
           </div>
-          <QuestionCard question={questions[0]} round={1} total={questions.length} inputValue="" />
-        </div>
-        {/* Geri sayım */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-          <p className="text-sm font-medium tracking-widest uppercase" style={{ color: 'var(--color-text-muted)' }}>
-            Hazır mısın?
-          </p>
-          <div
-            className="font-mono font-semibold transition-all"
-            style={{ fontSize: '7rem', lineHeight: 1, color: 'var(--color-text-primary)' }}
-          >
-            {startCountdown}
-          </div>
-        </div>
+        )}
       </div>
     );
   }
