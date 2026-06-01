@@ -503,7 +503,13 @@ export default function RoomPage() {
   }
 
   function handleNext() {
-    // Broadcast "sonraki"ya bastım" — hepsi basınca geçilir
+    const isLastRound = round + 1 >= questions.length;
+    if (isLastRound) {
+      // Son turda herkesin beklemesine gerek yok — direkt sonuç ekranına geç
+      setPhase('finished');
+      return;
+    }
+    // Ara turlarda hepsi basınca geçilir
     channelRef.current?.send({
       type: 'broadcast',
       event: 'player_next',
