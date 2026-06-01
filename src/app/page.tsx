@@ -29,18 +29,17 @@ export default function LandingPage() {
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
-
     if (phase === 'entering') {
-      timer = setTimeout(() => setPhase('visible'), 550);
+      timer = setTimeout(() => setPhase('visible'), 600);
     } else if (phase === 'visible') {
       timer = setTimeout(() => setPhase('exiting'), 5000);
     } else {
+      // exit animasyonu biter bitmez (0ms gap) yeni soru
       timer = setTimeout(() => {
         setIndex((i) => (i + 1) % TEASER_QUESTIONS.length);
         setPhase('entering');
-      }, 80);
+      }, 0);
     }
-
     return () => clearTimeout(timer);
   }, [phase]);
 
@@ -50,29 +49,29 @@ export default function LandingPage() {
   const teaserStyle: React.CSSProperties = {
     opacity: phase === 'visible' ? 1 : 0,
     transform:
-      phase === 'entering' ? 'translateY(18px)' :
-      phase === 'exiting'  ? 'translateY(-18px)' :
+      phase === 'entering' ? 'translateY(20px)' :
+      phase === 'exiting'  ? 'translateY(-20px)' :
       'translateY(0)',
     transition: phase === 'exiting'
-      ? 'opacity 0.65s ease, transform 0.65s cubic-bezier(0.22,1,0.36,1)'
-      : 'opacity 0.55s ease, transform 0.55s cubic-bezier(0.22,1,0.36,1)',
+      ? 'opacity 0.85s ease, transform 0.85s cubic-bezier(0.4,0,0.2,1)'
+      : 'opacity 0.6s ease, transform 0.6s cubic-bezier(0.22,1,0.36,1)',
   };
 
   return (
     <div
-      className="h-full flex flex-col items-center px-6 pt-12 pb-8 overflow-hidden"
-      style={{ backgroundColor: 'var(--color-bg)', position: 'relative' }}
+      className="h-full flex flex-col px-6 overflow-hidden"
+      style={{ backgroundColor: 'var(--color-bg)', position: 'relative', paddingTop: 'max(48px, env(safe-area-inset-top))', paddingBottom: 'max(28px, env(safe-area-inset-bottom))' }}
     >
-      {/* Organik blob arka plan */}
+      {/* Blob */}
       <div
         aria-hidden="true"
         style={{
           position: 'absolute',
-          width: '380px',
-          height: '380px',
-          background: 'radial-gradient(ellipse at center, rgba(249,115,22,0.28) 0%, rgba(249,115,22,0.10) 50%, transparent 72%)',
+          width: '360px',
+          height: '360px',
+          background: 'radial-gradient(ellipse at center, rgba(249,115,22,0.25) 0%, rgba(249,115,22,0.08) 55%, transparent 72%)',
           borderRadius: '60% 40% 55% 45% / 50% 60% 40% 50%',
-          top: '35%',
+          top: '42%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           animation: 'blob-morph 7s ease-in-out infinite',
@@ -81,36 +80,54 @@ export default function LandingPage() {
         }}
       />
 
-      {/* Başlık */}
-      <div className="relative z-10 flex flex-col items-center gap-2 animate-fade-up mb-5">
+      {/* ── Başlık ── */}
+      <div className="relative z-10 flex flex-col items-center gap-2 animate-fade-up" style={{ marginBottom: '6px' }}>
         <div
-          className="text-xs font-mono tracking-widest uppercase"
+          className="text-xs font-mono uppercase"
           style={{ color: 'var(--color-reward)', letterSpacing: '0.18em' }}
         >
           Tahmin Zekası
         </div>
         <h1
-          className="text-6xl font-bold tracking-tight text-center leading-none"
+          className="text-5xl font-bold tracking-tight text-center leading-none"
           style={{ color: 'var(--color-text-primary)', letterSpacing: '-0.03em' }}
         >
           Approxense
         </h1>
         <p
-          className="text-base text-center max-w-[240px] leading-snug"
-          style={{ color: 'var(--color-text-secondary)' }}
+          className="text-sm text-center leading-snug"
+          style={{ color: 'var(--color-text-secondary)', maxWidth: '220px' }}
         >
           Ne kadar doğru tahmin edebilirsin?
         </p>
       </div>
 
-      {/* Teaser soru alanı */}
-      <div
-        className="relative z-10 w-full flex-1 flex items-center justify-center"
-        aria-live="polite"
-        aria-atomic="true"
-      >
+      {/* ── Kategoriler (B yukarı çıktı) ── */}
+      <div className="relative z-10 flex flex-col items-center gap-2 animate-fade-up delay-100" style={{ marginBottom: '14px', marginTop: '18px' }}>
+        <div className="flex flex-wrap justify-center gap-1.5">
+          {CATEGORIES.map((cat) => (
+            <span
+              key={cat}
+              className="text-xs font-medium px-3 py-1 rounded-full border"
+              style={{
+                backgroundColor: 'var(--color-surface)',
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-text-secondary)',
+              }}
+            >
+              {cat}
+            </span>
+          ))}
+        </div>
+        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+          5 kategori · 10 soru · 20 saniye
+        </p>
+      </div>
+
+      {/* ── Teaser soru (A ile B arasında) ── */}
+      <div className="relative z-10 flex-1 flex items-center" aria-live="polite" aria-atomic="true">
         <div
-          className="w-full rounded-2xl px-5 py-6"
+          className="w-full rounded-2xl px-5 py-5"
           style={{
             ...teaserStyle,
             backgroundColor: `${accentColor}0A`,
@@ -118,7 +135,7 @@ export default function LandingPage() {
           }}
         >
           <p
-            className="text-xl font-semibold leading-snug mb-5"
+            className="text-lg font-semibold leading-snug mb-4"
             style={{ color: 'var(--color-text-primary)', letterSpacing: '-0.02em' }}
           >
             {q.text}{' '}
@@ -141,38 +158,16 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* Kategoriler + bilgi */}
-      <div className="relative z-10 flex flex-col items-center gap-2 mt-5 mb-4 animate-fade-up delay-200">
-        <div className="flex flex-wrap justify-center gap-2">
-          {CATEGORIES.map((cat) => (
-            <span
-              key={cat}
-              className="text-xs font-medium px-3 py-1.5 rounded-full border"
-              style={{
-                backgroundColor: 'var(--color-surface)',
-                borderColor: 'var(--color-border)',
-                color: 'var(--color-text-secondary)',
-              }}
-            >
-              {cat}
-            </span>
-          ))}
-        </div>
-        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-          5 kategori · 10 soru · 20 saniye
-        </p>
-      </div>
-
-      {/* CTA */}
-      <div className="relative z-10 w-full animate-fade-up delay-300">
+      {/* ── CTA ── */}
+      <div className="relative z-10 animate-fade-up delay-200" style={{ marginTop: '16px' }}>
         <Link href="/play" className="w-full block">
           <button
             className="w-full rounded-2xl text-base font-semibold text-white animate-cta-glow cursor-pointer"
             style={{
               backgroundColor: 'var(--color-accent)',
-              minHeight: '56px',
+              minHeight: '54px',
               letterSpacing: '-0.01em',
-              transition: 'background-color 0.15s, transform 0.1s',
+              transition: 'transform 0.1s',
             }}
             onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.97)')}
             onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
