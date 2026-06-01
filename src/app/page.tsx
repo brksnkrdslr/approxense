@@ -31,14 +31,14 @@ export default function LandingPage() {
     let timer: ReturnType<typeof setTimeout>;
 
     if (phase === 'entering') {
-      timer = setTimeout(() => setPhase('visible'), 350);
+      timer = setTimeout(() => setPhase('visible'), 600);
     } else if (phase === 'visible') {
-      timer = setTimeout(() => setPhase('exiting'), 2800);
+      timer = setTimeout(() => setPhase('exiting'), 5000);
     } else {
       timer = setTimeout(() => {
         setIndex((i) => (i + 1) % TEASER_QUESTIONS.length);
         setPhase('entering');
-      }, 350);
+      }, 700);
     }
 
     return () => clearTimeout(timer);
@@ -50,10 +50,12 @@ export default function LandingPage() {
   const teaserStyle: React.CSSProperties = {
     opacity: phase === 'visible' ? 1 : 0,
     transform:
-      phase === 'entering' ? 'translateY(14px)' :
-      phase === 'exiting'  ? 'translateY(-14px)' :
+      phase === 'entering' ? 'translateY(18px)' :
+      phase === 'exiting'  ? 'translateY(-18px)' :
       'translateY(0)',
-    transition: 'opacity 0.32s ease, transform 0.32s cubic-bezier(0.22,1,0.36,1)',
+    transition: phase === 'exiting'
+      ? 'opacity 0.65s ease, transform 0.65s cubic-bezier(0.22,1,0.36,1)'
+      : 'opacity 0.55s ease, transform 0.55s cubic-bezier(0.22,1,0.36,1)',
   };
 
   return (
@@ -80,7 +82,7 @@ export default function LandingPage() {
       />
 
       {/* Başlık */}
-      <div className="relative z-10 flex flex-col items-center gap-3 animate-fade-up mb-8">
+      <div className="relative z-10 flex flex-col items-center gap-3 animate-fade-up mb-6">
         <div
           className="text-xs font-mono tracking-widest uppercase"
           style={{ color: 'var(--color-reward)', letterSpacing: '0.18em' }}
@@ -108,42 +110,36 @@ export default function LandingPage() {
         aria-atomic="true"
       >
         <div
-          className="w-full rounded-2xl px-5 py-5"
+          className="w-full rounded-2xl px-5 py-6"
           style={{
             ...teaserStyle,
-            backgroundColor: `${accentColor}0C`,
-            border: `1.5px solid ${accentColor}22`,
+            backgroundColor: `${accentColor}0A`,
+            border: `1.5px solid ${accentColor}1E`,
           }}
         >
           <p
-            className="text-xs font-semibold uppercase tracking-widest mb-3"
-            style={{ color: accentColor, letterSpacing: '0.12em' }}
-          >
-            Örnek Soru
-          </p>
-          <p
-            className="text-lg font-semibold leading-snug"
+            className="text-xl font-semibold leading-snug mb-5"
             style={{ color: 'var(--color-text-primary)', letterSpacing: '-0.02em' }}
           >
             {q.text}{' '}
             <strong style={{ color: accentColor }}>{q.unit}</strong>
             {'dir?'}
           </p>
-          <div className="mt-4 flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <div
               className="h-0.5 flex-1 rounded-full overflow-hidden"
-              style={{ backgroundColor: `${accentColor}20` }}
+              style={{ backgroundColor: `${accentColor}18` }}
             >
               <div
                 className="h-full rounded-full"
                 style={{
                   width: phase === 'visible' ? '100%' : '0%',
                   backgroundColor: accentColor,
-                  transition: phase === 'visible' ? 'width 2.8s linear' : 'none',
+                  transition: phase === 'visible' ? 'width 5s linear' : 'none',
                 }}
               />
             </div>
-            <span className="text-xs font-mono" style={{ color: `${accentColor}80` }}>
+            <span className="text-xs font-mono" style={{ color: `${accentColor}70` }}>
               {index + 1}/{TEASER_QUESTIONS.length}
             </span>
           </div>
@@ -151,7 +147,7 @@ export default function LandingPage() {
       </div>
 
       {/* Kategoriler + bilgi */}
-      <div className="relative z-10 flex flex-col items-center gap-3 mb-6 animate-fade-up delay-200">
+      <div className="relative z-10 flex flex-col items-center gap-3 mt-6 mb-5 animate-fade-up delay-200">
         <div className="flex flex-wrap justify-center gap-2">
           {CATEGORIES.map((cat) => (
             <span
