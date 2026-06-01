@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ScoreResult, QuestionPublic } from '@/types';
-import { formatScore, numberToTurkish, shortNumber } from '@/lib/utils';
+import { formatScore, numberToTurkish } from '@/lib/utils';
 import Button from '@/components/ui/Button';
 
 interface RevealScreenProps {
@@ -211,9 +211,15 @@ export default function RevealScreen({
                     {a.displayName ?? 'Oyuncu'}{isMe ? <span className="ml-1 text-xs font-normal" style={{ color: 'var(--color-text-secondary)' }}>(sen)</span> : ''}
                   </span>
                   {/* Cevap */}
-                  <span className="text-sm font-mono w-20 text-right shrink-0" style={{ color: 'var(--color-text-primary)' }}>
-                    {shortNumber(a.guessedValue)}
-                  </span>
+                  {(() => {
+                    const val = a.guessedValue !== null ? a.guessedValue.toLocaleString('tr-TR') : '—';
+                    const fontSize = val.length > 12 ? '0.6rem' : val.length > 8 ? '0.75rem' : '0.875rem';
+                    return (
+                      <span className="font-mono w-20 text-right shrink-0" style={{ color: 'var(--color-text-primary)', fontSize }}>
+                        {val}
+                      </span>
+                    );
+                  })()}
                   {/* Puan */}
                   <span className="text-sm font-mono font-bold w-12 text-right shrink-0" style={{ color: scoreCol }}>
                     {formatScore(a.finalScore)}
