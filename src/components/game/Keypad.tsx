@@ -97,6 +97,7 @@ export default function Keypad({
   return (
     <div
       className="absolute bottom-0 left-0 right-0 w-full"
+      onPointerDown={() => warmUpAudio()}
       style={{
         backgroundColor: 'var(--color-surface)',
         borderTop: `2px solid ${isUrgent ? 'rgba(239,68,68,0.4)' : 'var(--color-border)'}`,
