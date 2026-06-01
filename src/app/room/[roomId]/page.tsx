@@ -273,6 +273,46 @@ export default function RoomPage() {
           });
           return Array.from(map.values());
         });
+
+        const connected = connectedPlayersRef.current;
+
+        // Oyuncu düştüğünde answer_ready bekleyenler yeniden kontrol et
+        setAnswerReadyBy((prev) => {
+          if (connected.length < 1) return prev;
+          const allReady = connected.every((id) => prev.includes(id));
+          if (allReady && prev.length > 0) {
+            setMyAnswerReady(false);
+            submitGuessRef.current(inputValueRef.current);
+            return [];
+          }
+          return prev;
+        });
+
+        // Oyuncu düştüğünde player_next bekleyenler yeniden kontrol et
+        setNextPressedBy((prev) => {
+          if (connected.length < 1) return prev;
+          const allPressed = connected.every((id) => prev.has(id));
+          if (allPressed && prev.size > 0) {
+            const next = new Set<string>();
+            setRound((r) => {
+              const nextRound = r + 1;
+              if (nextRound >= 10) {
+                setPhase('finished');
+              } else {
+                setInputValue('');
+                setScoreResult(null);
+                setPhase('playing');
+                setMyAnswerReady(false);
+                setAnswerReadyBy([]);
+                setRoundAnswers([]);
+                submitLock.current = false;
+              }
+              return nextRound < 10 ? nextRound : r;
+            });
+            return next;
+          }
+          return prev;
+        });
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
