@@ -200,6 +200,10 @@ export default function RevealScreen({
                   <span className="text-sm font-semibold flex-1 truncate" style={{ color: playerColor, fontFamily: 'DM Sans, sans-serif' }}>
                     {a.displayName ?? 'Oyuncu'}{isMe ? <span className="ml-1 text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>(sen)</span> : ''}
                   </span>
+                  {/* Tahmin */}
+                  <span className="text-xs font-mono shrink-0 mr-1" style={{ color: 'var(--color-text-muted)' }}>
+                    {a.guessedValue !== null ? a.guessedValue.toLocaleString('tr-TR') : '—'}
+                  </span>
                   {/* Puan */}
                   <span className="text-sm font-mono font-semibold shrink-0" style={{ color: scoreCol }}>
                     {formatScore(a.finalScore)}

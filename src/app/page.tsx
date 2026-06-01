@@ -7,10 +7,10 @@ const CATEGORIES = ['Mesafe', 'Ağırlık', 'Alan', 'Zaman', 'İnsan'];
 
 const TEASER_QUESTIONS = [
   { text: 'Ay\'a olan ortalama uzaklık kaç', unit: 'km', category: 'distance' },
-  { text: 'Bir insan kalbi dakikada kaç kez atar', unit: 'kez', category: 'human' },
-  { text: 'Amazon Nehri\'nin uzunluğu kaç', unit: 'km', category: 'distance' },
-  { text: 'Dünya\'nın toplam yüzey alanı kaç', unit: 'km²', category: 'space' },
-  { text: 'İnsan vücudundaki kan damarlarının toplam uzunluğu kaç', unit: 'km', category: 'human' },
+  { text: 'Bir mavi balinanın ağırlığı kaç', unit: 'ton', category: 'scale' },
+  { text: 'Sahra Çölü\'nün alanı kaç', unit: 'milyon km²', category: 'space' },
+  { text: 'Osmanlı İmparatorluğu kaç yıl sürdü', unit: 'yıl', category: 'time' },
+  { text: 'Bir insanın ömrü boyunca aldığı nefes sayısı kaç', unit: 'milyon', category: 'human' },
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
