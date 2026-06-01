@@ -748,9 +748,24 @@ export default function RoomPage() {
     return (
       <div style={{ height: '100%', overflowY: 'auto', backgroundColor: 'var(--color-bg)' }}>
       <div className="px-5 pt-6 pb-8 flex flex-col gap-4">
-        <h2 className="text-2xl font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>
-          Oyun Bitti
-        </h2>
+        {(() => {
+          const winner = [...leaderboard].sort((a, b) => b.score - a.score)[0];
+          const winnerIsMe = winner?.playerId === playerId.current;
+          return (
+            <div className="mb-1 animate-fade-up">
+              <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-secondary)', letterSpacing: '0.12em' }}>
+                Oyun Bitti
+              </p>
+              <h2 className="text-2xl font-bold leading-tight" style={{ color: 'var(--color-text-primary)', letterSpacing: '-0.02em' }}>
+                {winner
+                  ? winnerIsMe
+                    ? 'Sen kazandın!'
+                    : `${winner.displayName ?? 'Oyuncu'} kazandı`
+                  : 'Sonuçlar'}
+              </h2>
+            </div>
+          );
+        })()}
         <Leaderboard entries={leaderboard} currentPlayerId={playerId.current} />
 
         {/* Oyuncu hazır durumları */}
