@@ -16,6 +16,7 @@ interface RevealScreenProps {
   currentPlayerId?: string;
   leaderboard?: { playerId: string; displayName: string | null; score: number }[];
   roundAnswers?: { playerId: string; displayName: string | null; color?: string; guessedValue: number | null; finalScore: number }[];
+  nextPressedBy?: Set<string>;
   isMultiplayer?: boolean;
 }
 
@@ -51,6 +52,7 @@ export default function RevealScreen({
   onNext,
   currentPlayerId,
   roundAnswers,
+  nextPressedBy,
   isMultiplayer = false,
 }: RevealScreenProps) {
   const [nextPressed, setNextPressed] = useState(false);
@@ -194,8 +196,16 @@ export default function RevealScreen({
               const scoreCol = getScoreColor(a.finalScore);
               return (
                 <div key={a.playerId} className="flex items-center gap-3">
-                  {/* Sıra */}
-                  <span className="text-xs font-mono w-4 shrink-0 text-center" style={{ color: 'var(--color-text-secondary)' }}>{i + 1}</span>
+                  {/* Sıra / onay tiki */}
+                  <span className="w-4 shrink-0 flex items-center justify-center">
+                    {nextPressedBy?.has(a.playerId) ? (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-success)' }}>
+                        <path d="M20 6L9 17l-5-5"/>
+                      </svg>
+                    ) : (
+                      <span className="text-xs font-mono" style={{ color: 'var(--color-text-secondary)' }}>{i + 1}</span>
+                    )}
+                  </span>
                   {/* İsim */}
                   <span className="text-sm font-semibold flex-1 truncate" style={{ color: playerColor }}>
                     {a.displayName ?? 'Oyuncu'}{isMe ? <span className="ml-1 text-xs font-normal" style={{ color: 'var(--color-text-secondary)' }}>(sen)</span> : ''}

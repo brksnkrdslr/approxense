@@ -751,6 +751,7 @@ export default function RoomPage() {
           currentPlayerId={playerId.current}
           leaderboard={leaderboard}
           roundAnswers={roundAnswers}
+          nextPressedBy={nextPressedBy}
           isMultiplayer
         />
       </div>
