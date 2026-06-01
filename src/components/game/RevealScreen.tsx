@@ -180,6 +180,13 @@ export default function RevealScreen({
           <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--color-text-muted)', letterSpacing: '0.1em' }}>
             Tur Sıralaması
           </p>
+          {/* Başlık satırı */}
+          <div className="flex items-center gap-3 pb-1 border-b mb-1" style={{ borderColor: 'var(--color-border)' }}>
+            <span className="w-4 shrink-0" />
+            <span className="text-xs font-medium flex-1" style={{ color: 'var(--color-text-secondary)' }}>İsim</span>
+            <span className="text-xs font-medium w-16 text-right shrink-0" style={{ color: 'var(--color-text-secondary)' }}>Cevap</span>
+            <span className="text-xs font-medium w-12 text-right shrink-0" style={{ color: 'var(--color-text-secondary)' }}>Puan</span>
+          </div>
           <div className="flex flex-col gap-2">
             {[...roundAnswers].sort((a, b) => b.finalScore - a.finalScore).map((a, i) => {
               const isMe = a.playerId === currentPlayerId;
@@ -188,33 +195,19 @@ export default function RevealScreen({
               return (
                 <div key={a.playerId} className="flex items-center gap-3">
                   {/* Sıra */}
-                  <span className="text-xs font-mono w-4 shrink-0 text-center" style={{ color: 'var(--color-text-muted)' }}>{i + 1}</span>
-                  {/* Avatar */}
-                  <div
-                    className="rounded-full flex items-center justify-center font-bold text-white flex-shrink-0"
-                    style={{ width: '28px', height: '28px', backgroundColor: playerColor, fontSize: '0.7rem', boxShadow: `0 1px 6px ${playerColor}50` }}
-                  >
-                    {(a.displayName ?? 'O').slice(0, 1).toUpperCase()}
-                  </div>
+                  <span className="text-xs font-mono w-4 shrink-0 text-center" style={{ color: 'var(--color-text-secondary)' }}>{i + 1}</span>
                   {/* İsim */}
-                  <span className="text-sm font-semibold flex-1 truncate" style={{ color: playerColor, fontFamily: 'DM Sans, sans-serif' }}>
-                    {a.displayName ?? 'Oyuncu'}{isMe ? <span className="ml-1 text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>(sen)</span> : ''}
+                  <span className="text-sm font-semibold flex-1 truncate" style={{ color: playerColor }}>
+                    {a.displayName ?? 'Oyuncu'}{isMe ? <span className="ml-1 text-xs font-normal" style={{ color: 'var(--color-text-secondary)' }}>(sen)</span> : ''}
                   </span>
-                  {/* Tahmin + Puan */}
-                  <div className="flex flex-col items-end shrink-0 gap-0.5">
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>cevap</span>
-                      <span className="text-xs font-mono font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                        {a.guessedValue !== null ? a.guessedValue.toLocaleString('tr-TR') : '—'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>puan</span>
-                      <span className="text-sm font-mono font-bold" style={{ color: scoreCol }}>
-                        {formatScore(a.finalScore)}
-                      </span>
-                    </div>
-                  </div>
+                  {/* Cevap */}
+                  <span className="text-sm font-mono w-16 text-right shrink-0" style={{ color: 'var(--color-text-primary)' }}>
+                    {a.guessedValue !== null ? a.guessedValue.toLocaleString('tr-TR') : '—'}
+                  </span>
+                  {/* Puan */}
+                  <span className="text-sm font-mono font-bold w-12 text-right shrink-0" style={{ color: scoreCol }}>
+                    {formatScore(a.finalScore)}
+                  </span>
                 </div>
               );
             })}
