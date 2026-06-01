@@ -77,7 +77,7 @@ export default function RoomPage() {
   const [timeLeft, setTimeLeft] = useState<number>(DEFAULT_SETTINGS.duration);
   const inputValueRef = useRef('');
   const [roundAnswers, setRoundAnswers] = useState<{ playerId: string; displayName: string | null; color?: string; guessedValue: number | null; finalScore: number }[]>([]);
-  const [playerReactions, setPlayerReactions] = useState<Record<string, string>>({});
+  const [playerReactions, setPlayerReactions] = useState<Record<string, { emoji: string; seq: number }>>({});
   const [myDisplayName, setMyDisplayName] = useState<string>(() =>
     typeof window !== 'undefined' ? getOrCreateDisplayName() : ''
   );
@@ -217,7 +217,10 @@ export default function RoomPage() {
         if (payload.playerId === playerId.current) setMyAnswerReady(false);
       })
       .on('broadcast', { event: 'player_reaction' }, ({ payload }: { payload: { playerId: string; emoji: string } }) => {
-        setPlayerReactions((prev) => ({ ...prev, [payload.playerId]: payload.emoji }));
+        setPlayerReactions((prev) => ({
+          ...prev,
+          [payload.playerId]: { emoji: payload.emoji, seq: (prev[payload.playerId]?.seq ?? 0) + 1 },
+        }));
       })
       .on('broadcast', { event: 'player_next' }, ({ payload }: { payload: { playerId: string; round: number } }) => {
         setNextPressedBy((prev) => {
@@ -766,7 +769,10 @@ export default function RoomPage() {
           nextPressedBy={nextPressedBy}
           playerReactions={playerReactions}
           onReaction={(emoji) => {
-            setPlayerReactions((prev) => ({ ...prev, [playerId.current]: emoji }));
+            setPlayerReactions((prev) => ({
+              ...prev,
+              [playerId.current]: { emoji, seq: (prev[playerId.current]?.seq ?? 0) + 1 },
+            }));
             channelRef.current?.send({
               type: 'broadcast',
               event: 'player_reaction',

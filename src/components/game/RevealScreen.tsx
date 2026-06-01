@@ -5,7 +5,7 @@ import { ScoreResult, QuestionPublic } from '@/types';
 import { formatScore, numberToTurkish } from '@/lib/utils';
 import Button from '@/components/ui/Button';
 
-const REACTION_EMOJIS = ['🔥', '💀', '👑', '😤', '🫵', '😂'];
+const REACTION_EMOJIS = ['🔥', '😎', '👑', '😤', '😭', '😂'];
 
 interface RevealScreenProps {
   question: QuestionPublic;
@@ -19,7 +19,7 @@ interface RevealScreenProps {
   leaderboard?: { playerId: string; displayName: string | null; score: number }[];
   roundAnswers?: { playerId: string; displayName: string | null; color?: string; guessedValue: number | null; finalScore: number }[];
   nextPressedBy?: Set<string>;
-  playerReactions?: Record<string, string>;
+  playerReactions?: Record<string, { emoji: string; seq: number }>;
   onReaction?: (emoji: string) => void;
   isMultiplayer?: boolean;
 }
@@ -221,11 +221,11 @@ export default function RevealScreen({
                     )}
                     {playerReactions?.[a.playerId] && (
                       <span
-                        key={`${a.playerId}-${playerReactions[a.playerId]}`}
+                        key={`${a.playerId}-${playerReactions[a.playerId].seq}`}
                         className="text-base animate-reaction-pulse"
                         style={{ lineHeight: 1 }}
                       >
-                        {playerReactions[a.playerId]}
+                        {playerReactions[a.playerId].emoji}
                       </span>
                     )}
                   </span>
