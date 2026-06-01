@@ -77,6 +77,7 @@ export default function RoomPage() {
   const [timeLeft, setTimeLeft] = useState<number>(DEFAULT_SETTINGS.duration);
   const inputValueRef = useRef('');
   const [roundAnswers, setRoundAnswers] = useState<{ playerId: string; displayName: string | null; color?: string; guessedValue: number | null; finalScore: number }[]>([]);
+  const [playerReactions, setPlayerReactions] = useState<Record<string, string>>({});
   const [myDisplayName, setMyDisplayName] = useState<string>(() =>
     typeof window !== 'undefined' ? getOrCreateDisplayName() : ''
   );
@@ -215,6 +216,9 @@ export default function RoomPage() {
         setAnswerReadyBy((prev) => prev.filter((id) => id !== payload.playerId));
         if (payload.playerId === playerId.current) setMyAnswerReady(false);
       })
+      .on('broadcast', { event: 'player_reaction' }, ({ payload }: { payload: { playerId: string; emoji: string } }) => {
+        setPlayerReactions((prev) => ({ ...prev, [payload.playerId]: payload.emoji }));
+      })
       .on('broadcast', { event: 'player_next' }, ({ payload }: { payload: { playerId: string; round: number } }) => {
         setNextPressedBy((prev) => {
           const next = new Set(prev);
@@ -234,6 +238,7 @@ export default function RoomPage() {
                 setMyAnswerReady(false);
                 setAnswerReadyBy([]);
                 setRoundAnswers([]);
+                setPlayerReactions({});
                 submitLock.current = false;
               }
               return nextRound < 10 ? nextRound : r;
@@ -307,6 +312,7 @@ export default function RoomPage() {
                 setMyAnswerReady(false);
                 setAnswerReadyBy([]);
                 setRoundAnswers([]);
+                setPlayerReactions({});
                 submitLock.current = false;
               }
               return nextRound < 10 ? nextRound : r;
@@ -758,6 +764,15 @@ export default function RoomPage() {
           leaderboard={leaderboard}
           roundAnswers={roundAnswers}
           nextPressedBy={nextPressedBy}
+          playerReactions={playerReactions}
+          onReaction={(emoji) => {
+            setPlayerReactions((prev) => ({ ...prev, [playerId.current]: emoji }));
+            channelRef.current?.send({
+              type: 'broadcast',
+              event: 'player_reaction',
+              payload: { playerId: playerId.current, emoji },
+            });
+          }}
           isMultiplayer
         />
       </div>

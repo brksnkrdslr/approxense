@@ -5,6 +5,8 @@ import { ScoreResult, QuestionPublic } from '@/types';
 import { formatScore, numberToTurkish } from '@/lib/utils';
 import Button from '@/components/ui/Button';
 
+const REACTION_EMOJIS = ['🔥', '💀', '👑', '😤', '🫵', '😂'];
+
 interface RevealScreenProps {
   question: QuestionPublic;
   guessedValue: number | null;
@@ -17,6 +19,8 @@ interface RevealScreenProps {
   leaderboard?: { playerId: string; displayName: string | null; score: number }[];
   roundAnswers?: { playerId: string; displayName: string | null; color?: string; guessedValue: number | null; finalScore: number }[];
   nextPressedBy?: Set<string>;
+  playerReactions?: Record<string, string>;
+  onReaction?: (emoji: string) => void;
   isMultiplayer?: boolean;
 }
 
@@ -53,12 +57,22 @@ export default function RevealScreen({
   currentPlayerId,
   roundAnswers,
   nextPressedBy,
+  playerReactions,
+  onReaction,
   isMultiplayer = false,
 }: RevealScreenProps) {
   const [nextPressed, setNextPressed] = useState(false);
+  const [lastReaction, setLastReaction] = useState<string | null>(null);
+  const [pulseTrigger, setPulseTrigger] = useState(0);
   const isLast = round === total;
   const scoreColor = getScoreColor(scoreResult.finalScore);
   const scoreLabel = getScoreLabel(scoreResult.finalScore);
+
+  function handleReaction(emoji: string) {
+    setLastReaction(emoji);
+    setPulseTrigger(n => n + 1);
+    onReaction?.(emoji);
+  }
 
   function handleNext() {
     setNextPressed(true);
@@ -196,14 +210,23 @@ export default function RevealScreen({
               const scoreCol = getScoreColor(a.finalScore);
               return (
                 <div key={a.playerId} className="flex items-center gap-3">
-                  {/* Sıra / onay tiki */}
-                  <span className="w-4 shrink-0 flex items-center justify-center">
+                  {/* Sıra / onay tiki / reaksiyon */}
+                  <span className="w-8 shrink-0 flex items-center justify-center gap-1">
                     {nextPressedBy?.has(a.playerId) ? (
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-success)' }}>
                         <path d="M20 6L9 17l-5-5"/>
                       </svg>
                     ) : (
                       <span className="text-xs font-mono" style={{ color: 'var(--color-text-secondary)' }}>{i + 1}</span>
+                    )}
+                    {playerReactions?.[a.playerId] && (
+                      <span
+                        key={`${a.playerId}-${playerReactions[a.playerId]}`}
+                        className="text-base animate-reaction-pulse"
+                        style={{ lineHeight: 1 }}
+                      >
+                        {playerReactions[a.playerId]}
+                      </span>
                     )}
                   </span>
                   {/* İsim */}
@@ -231,18 +254,42 @@ export default function RevealScreen({
         </div>
       )}
 
-      {/* Sonraki butonu */}
+      {/* Alt alan: buton veya emoji grid */}
       <div
         className="absolute bottom-0 left-0 right-0 p-4"
         style={{ backgroundColor: 'var(--color-bg)', borderTop: '1px solid var(--color-border)' }}
       >
-        <Button onClick={handleNext} disabled={nextPressed}>
-          {nextPressed && isMultiplayer
-            ? '⏳ Diğerleri bekleniyor…'
-            : isLast
-            ? 'Sonuçları Gör →'
-            : 'Sonraki Soru →'}
-        </Button>
+        {nextPressed && isMultiplayer && !isLast ? (
+          /* Emoji reaksiyon grid */
+          <div className="grid grid-cols-6 gap-2">
+            {REACTION_EMOJIS.map((emoji) => {
+              const isSelected = lastReaction === emoji;
+              return (
+                <button
+                  key={emoji}
+                  onClick={() => handleReaction(emoji)}
+                  className="flex items-center justify-center rounded-2xl cursor-pointer"
+                  style={{
+                    fontSize: '1.6rem',
+                    height: '54px',
+                    backgroundColor: isSelected ? 'var(--color-surface-alt)' : 'var(--color-surface)',
+                    border: `1.5px solid ${isSelected ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                    transform: isSelected ? 'scale(1.12)' : 'scale(1)',
+                    transition: 'transform 0.15s cubic-bezier(0.22,1,0.36,1), border-color 0.15s, background-color 0.15s',
+                  }}
+                >
+                  {emoji}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <Button onClick={handleNext} disabled={nextPressed}>
+            {isLast
+              ? 'Sonuçları Gör →'
+              : 'Sonraki Soru →'}
+          </Button>
+        )}
       </div>
     </div>
   );
