@@ -6,11 +6,11 @@ import { useEffect, useState } from 'react';
 const CATEGORIES = ['Mesafe', 'Ağırlık', 'Alan', 'Zaman', 'İnsan'];
 
 const TEASER_QUESTIONS = [
-  { text: 'Ay\'a olan ortalama uzaklık kaç', unit: 'km', category: 'distance' },
-  { text: 'Bir mavi balinanın ağırlığı kaç', unit: 'ton', category: 'scale' },
-  { text: 'Sahra Çölü\'nün alanı kaç', unit: 'milyon km²', category: 'space' },
-  { text: 'Osmanlı İmparatorluğu kaç yıl sürdü', unit: 'yıl', category: 'time' },
-  { text: 'Bir insanın ömrü boyunca aldığı nefes sayısı kaç', unit: 'milyon', category: 'human' },
+  { text: 'Ay\'a olan ortalama uzaklık kaç', unit: 'km', suffix: '\'dir?', category: 'distance' },
+  { text: 'Bir mavi balinanın ağırlığı kaç', unit: 'ton', suffix: '\'dur?', category: 'scale' },
+  { text: 'Sahra Çölü\'nün alanı kaç', unit: 'km²', suffix: '\'dir?', category: 'space' },
+  { text: 'Osmanlı İmparatorluğu kaç', unit: 'yıl', suffix: ' sürdü?', category: 'time' },
+  { text: 'İnsan ömrü boyunca kaç', unit: 'kez', suffix: ' nefes alır?', category: 'human' },
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -122,7 +122,7 @@ export default function LandingPage() {
           >
             {q.text}{' '}
             <strong style={{ color: accentColor }}>{q.unit}</strong>
-            {'dir?'}
+            {q.suffix}
           </p>
           <div className="h-0.5 w-full rounded-full overflow-hidden" style={{ backgroundColor: `${accentColor}18` }}>
             <div
