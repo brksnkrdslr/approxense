@@ -80,7 +80,7 @@ export default function RevealScreen({
   }
 
   return (
-    <div className="px-5 pt-5 pb-32 flex flex-col gap-4 overflow-y-auto animate-fade-in" style={{ height: '100%' }}>
+    <div className="px-5 pt-5 pb-32 flex flex-col gap-4 overflow-y-auto animate-fade-in" style={{ height: '100%', overscrollBehaviorY: 'contain' }}>
 
       {/* Skor büyük — en üstte */}
       <div

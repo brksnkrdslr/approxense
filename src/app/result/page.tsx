@@ -33,7 +33,7 @@ export default function ResultPage() {
   if (rounds.length === 0) return null;
 
   return (
-    <div className="h-full px-5 pt-6 overflow-y-auto flex flex-col gap-4" style={{ backgroundColor: 'var(--color-bg)', paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+    <div className="h-full px-5 pt-6 overflow-y-auto flex flex-col gap-4" style={{ backgroundColor: 'var(--color-bg)', paddingBottom: 'max(24px, env(safe-area-inset-bottom))', overscrollBehavior: 'contain' }}>
       <ScoreDisplay totalScore={totalScore} rounds={rounds} />
 
       <Button onClick={handlePlayAgain}>Tekrar Oyna</Button>

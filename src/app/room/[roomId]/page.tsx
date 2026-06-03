@@ -658,6 +658,7 @@ export default function RoomPage() {
           style={{
             height: '100%',
             overflowY: isCountingDown ? 'hidden' : 'auto',
+            overscrollBehavior: 'contain',
             filter: isCountingDown ? 'blur(5px)' : 'none',
             opacity: isCountingDown ? 0.35 : 1,
             pointerEvents: isCountingDown ? 'none' : 'auto',
@@ -784,7 +785,7 @@ export default function RoomPage() {
   if (phase === 'finished') {
     const myRestartReady = readyPlayerIds.includes(playerId.current);
     return (
-      <div style={{ height: '100%', overflowY: 'auto', backgroundColor: 'var(--color-bg)' }}>
+      <div style={{ height: '100%', overflowY: 'auto', overscrollBehavior: 'contain', backgroundColor: 'var(--color-bg)' }}>
       <div className="px-5 pt-6 pb-8 flex flex-col gap-4">
         {(() => {
           const winner = [...leaderboard].sort((a, b) => b.score - a.score)[0];
