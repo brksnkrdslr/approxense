@@ -21,13 +21,13 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <meta name="google-adsense-account" content="ca-pub-1152196437732185" />
       </head>
-      <Script
-        async
-        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1152196437732185"
-        crossOrigin="anonymous"
-        strategy="afterInteractive"
-      />
       <body suppressHydrationWarning className="phone-body">
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1152196437732185"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         {/* Desktop: telefon çerçevesi | Mobile: tam ekran */}
         <div className="phone-outer">
           <div className="phone-frame">
