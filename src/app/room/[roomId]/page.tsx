@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { getOrCreatePlayerId, getOrCreateDisplayName, getPlayerColor, getPlayerHue, hueToColor, savePlayerColorHex, getSavedDisplayName, pickGuestName, SWATCH_COLORS } from '@/lib/utils';
+
+// Modül seviyesinde sabit — her render'da yeniden oluşturulmuyor
+const NICK_COLORS = SWATCH_COLORS.map((hex) => ({ hex }));
 import { getSettings, saveSettings } from '@/lib/questions';
 import { GameSettings, DEFAULT_SETTINGS } from '@/types';
 import SettingsPanel from '@/components/game/SettingsPanel';
@@ -538,8 +541,6 @@ export default function RoomPage() {
 
   const cumulativeScore = rounds.reduce((s, r) => s + r.finalScore, 0);
 
-  // Tek kaynak: utils.ts SWATCH_COLORS
-  const NICK_COLORS = SWATCH_COLORS.map((hex) => ({ hex }));
   const [nickSelectedColor, setNickSelectedColor] = useState(NICK_COLORS[7]);
 
   if (showNickname) {
