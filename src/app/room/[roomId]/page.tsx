@@ -192,9 +192,12 @@ export default function RoomPage() {
         if (payload.playerId === playerId.current) setIsReady(false);
       })
       .on('broadcast', { event: 'trigger_start' }, () => {
-        // İlk oyuncu start'ı tetikledi, herkes hazır duruma geçti
-        // startGame'i burada doğrudan çağırmak için flag kullanıyoruz
-        setShouldStart(true);
+        // Sadece en küçük playerId'ye sahip oyuncu startGame çağırır.
+        // Diğerleri game_start broadcast'ini bekler — böylece herkese aynı session gelir.
+        const sorted = [...connectedPlayersRef.current].sort();
+        if (sorted[0] === playerId.current) {
+          setShouldStart(true);
+        }
       })
       .on('broadcast', { event: 'player_answer' }, ({ payload }: { payload: { playerId: string; displayName: string | null; color?: string; guessedValue: number | null; finalScore: number } }) => {
         setRoundAnswers((prev) => {
