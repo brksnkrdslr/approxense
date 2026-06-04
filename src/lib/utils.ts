@@ -15,7 +15,7 @@ const GUEST_NAMES = [
   'Şansömer', 'Hesapçı', 'Uydurukçu', 'Kabataslak', 'Aşağıyukarı',
   'İncegören', 'KeskinGöz', 'Tahminkar', 'Bildimcik', 'Tam12den',
   'SallamaZiya', 'BeyinBedava', 'KuşBehçet', 'HassasTerazi', 'SonKararım',
-  'VavaBanga', 'NeydiYa', 'Ayangacı', 'YaTutarsa',
+  'VavaBanga', 'NeydiYa', 'AyanGacı', 'YaTutarsa',
 ];
 
 export function getOrCreateDisplayName(): string {
