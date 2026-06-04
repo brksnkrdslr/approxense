@@ -112,7 +112,7 @@ export default function PlayPage() {
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.blur()}
-          placeholder={placeholder}
+          placeholder="İsim gir ya da boş bırak"
           maxLength={20}
           className="w-full rounded-2xl border px-4 text-base font-semibold outline-none"
           style={{
