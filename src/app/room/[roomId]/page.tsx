@@ -691,10 +691,9 @@ export default function RoomPage() {
             isHost={hostPlayerId === playerId.current || connectedPlayersRef.current.length === 0}
             isSolo={connectedPlayersRef.current.length <= 1}
             onEditNickname={() => {
-              // Mevcut kayıtlı isim ve rengi yükle, touched sıfırla
-              const currentName = localStorage.getItem('approxense_display_name') ?? '';
+              // Lobby'de görünen ismi (myDisplayName) ve kayıtlı rengi yükle
+              setNickInput(myDisplayName);
               const currentHex = localStorage.getItem('approxense_player_color') ?? SWATCH_COLORS[7];
-              setNickInput(currentName);
               const colorMatch = NICK_COLORS.find(c => c.hex === currentHex);
               setNickSelectedColor(colorMatch ?? NICK_COLORS[7]);
               nickInputTouchedRef.current = false;
