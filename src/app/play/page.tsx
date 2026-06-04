@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { savePlayerHue, getSavedDisplayName, pickGuestName, getPlayerHue } from '@/lib/utils';
+import { savePlayerHue, savePlayerColorHex, getSavedDisplayName, pickGuestName, getPlayerHue } from '@/lib/utils';
 
 const PRESET_COLORS = [
   { hue: 0,   hex: '#EF4444', label: 'Kırmızı' },
@@ -29,9 +29,10 @@ export default function PlayPage() {
 
   const [selectedColor, setSelectedColor] = useState(() => {
     if (typeof window === 'undefined') return PRESET_COLORS[7];
-    const savedHue = localStorage.getItem('approxense_player_hue');
-    if (savedHue) {
-      const match = PRESET_COLORS.find(c => Math.abs(c.hue - Number(savedHue)) < 20);
+    // Önce hex ile eşleştir (daha güvenilir)
+    const savedHex = localStorage.getItem('approxense_player_color');
+    if (savedHex) {
+      const match = PRESET_COLORS.find(c => c.hex === savedHex);
       if (match) return match;
     }
     return PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)];
@@ -46,9 +47,9 @@ export default function PlayPage() {
   async function handlePlay() {
     const isEmpty = !nickname.trim();
     const finalName = isEmpty ? pickGuestName() : nickname.trim();
-    // Boş bırakılmışsa renk korunur (kullanıcı renk seçmiş olabilir), sadece isim rastgele atanır
     localStorage.setItem('approxense_display_name', finalName);
-    savePlayerHue(selectedColor.hue);
+    savePlayerColorHex(selectedColor.hex); // hex direkt kaydet — hue dönüşümü yok
+    savePlayerHue(selectedColor.hue);      // geriye uyumluluk için hue da sakla
     router.push('/room/new');
   }
 

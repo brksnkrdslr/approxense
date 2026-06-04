@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { getOrCreatePlayerId, getOrCreateDisplayName, getPlayerColor, getPlayerHue, hueToColor, savePlayerHue, getSavedDisplayName, pickGuestName } from '@/lib/utils';
+import { getOrCreatePlayerId, getOrCreateDisplayName, getPlayerColor, getPlayerHue, hueToColor, savePlayerHue, savePlayerColorHex, getSavedDisplayName, pickGuestName } from '@/lib/utils';
 import { getSettings, saveSettings } from '@/lib/questions';
 import { GameSettings, DEFAULT_SETTINGS } from '@/types';
 import SettingsPanel from '@/components/game/SettingsPanel';
@@ -562,6 +562,7 @@ export default function RoomPage() {
         setNickHue(randColor.hue);
       }
       localStorage.setItem('approxense_display_name', newName);
+      savePlayerColorHex(nickSelectedColor.hex);
       savePlayerHue(nickSelectedColor.hue);
       setNickHue(nickSelectedColor.hue);
       setMyDisplayName(newName);

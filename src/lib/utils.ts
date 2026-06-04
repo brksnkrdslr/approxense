@@ -68,9 +68,13 @@ export function hueToColor(hue: number): string {
 }
 
 export function getPlayerColor(): string {
-  if (typeof window === 'undefined') return hueToColor(240);
+  if (typeof window === 'undefined') return '#6366F1';
+  // Hex direkt kaydedilmişse onu kullan
+  const hex = localStorage.getItem('approxense_player_color');
+  if (hex && hex.startsWith('#')) return hex;
+  // Eski hue tabanlı kayıt varsa dönüştür (geriye uyumluluk)
   const hue = localStorage.getItem('approxense_player_hue');
-  return hue ? hueToColor(Number(hue)) : hueToColor(240);
+  return hue ? hueToColor(Number(hue)) : '#6366F1';
 }
 
 export function getPlayerHue(): number {
@@ -86,7 +90,14 @@ export function savePlayerColor(color: string): void {
 export function savePlayerHue(hue: number): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem('approxense_player_hue', String(hue));
+  // hex'i de kaydet (hueToColor fallback için)
   localStorage.setItem('approxense_player_color', hueToColor(hue));
+}
+
+/** Hex rengi direkt kaydeder — swatch seçimlerinde kullan */
+export function savePlayerColorHex(hex: string): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('approxense_player_color', hex);
 }
 
 export function getOrCreatePlayerId(): string {
