@@ -543,27 +543,29 @@ export default function RoomPage() {
 
   const [nickSelectedColor, setNickSelectedColor] = useState(NICK_COLORS[7]);
 
+  // Component seviyesinde tanımlı — her zaman güncel state'i yakalar
+  function confirmNickname() {
+    const isEmpty = !nickInput.trim();
+    const finalColor = isEmpty
+      ? { hex: SWATCH_COLORS[Math.floor(Math.random() * SWATCH_COLORS.length)] }
+      : nickSelectedColor;
+    const newName = isEmpty ? pickGuestName() : nickInput.trim();
+    localStorage.setItem('approxense_display_name', newName);
+    savePlayerColorHex(finalColor.hex);
+    if (isEmpty) setNickSelectedColor(finalColor);
+    setMyDisplayName(newName);
+    isEditModeRef.current = false;
+    setShowNickname(false);
+    channelRef.current?.track({
+      playerId: playerId.current,
+      displayName: newName,
+      color: finalColor.hex,
+      isCreator: sessionStorage.getItem('approxense_created_room') === roomId,
+    });
+  }
+
   if (showNickname) {
     const displayPreview = nickInput.trim() || 'Oyuncu';
-    const confirmNickname = () => {
-      const isEmpty = !nickInput.trim();
-      const newName = isEmpty ? pickGuestName() : nickInput.trim();
-      if (isEmpty) {
-        const randHex = SWATCH_COLORS[Math.floor(Math.random() * SWATCH_COLORS.length)];
-        setNickSelectedColor({ hex: randHex });
-      }
-      localStorage.setItem('approxense_display_name', newName);
-      savePlayerColorHex(nickSelectedColor.hex);
-      setMyDisplayName(newName);
-      isEditModeRef.current = false;
-      setShowNickname(false);
-      channelRef.current?.track({
-        playerId: playerId.current,
-        displayName: newName,
-        color: nickSelectedColor.hex,
-        isCreator: sessionStorage.getItem('approxense_created_room') === roomId,
-      });
-    };
     return (
       <div className="h-full flex flex-col overflow-hidden animate-fade-up" style={{ backgroundColor: 'var(--color-bg)' }}>
         {/* Avatar önizleme */}
