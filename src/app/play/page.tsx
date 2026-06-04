@@ -46,9 +46,9 @@ export default function PlayPage() {
   async function handlePlay() {
     const isEmpty = !nickname.trim();
     const finalName = isEmpty ? pickGuestName() : nickname.trim();
-    const finalColor = isEmpty ? PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)] : selectedColor;
+    // Boş bırakılmışsa renk korunur (kullanıcı renk seçmiş olabilir), sadece isim rastgele atanır
     localStorage.setItem('approxense_display_name', finalName);
-    savePlayerHue(finalColor.hue);
+    savePlayerHue(selectedColor.hue);
     router.push('/room/new');
   }
 
