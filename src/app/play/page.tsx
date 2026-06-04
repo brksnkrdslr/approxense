@@ -32,12 +32,14 @@ export default function PlayPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('approxense_display_name');
-      // Daha önce özelleştirilmiş isim varsa göster, yoksa otomatik atanan komik ismi placeholder yap
-      if (saved) {
-        setNickname(saved);
-      } else {
-        // İlk kez giriyor — otomatik isim ata ve placeholder olarak göster
+      // Misafir ile başlıyorsa veya yoksa — komik isim üret, placeholder olarak göster
+      const isGuest = !saved || saved.startsWith('Misafir');
+      if (isGuest) {
+        // Eski Misafir kaydını temizle, komik isim ata
+        localStorage.removeItem('approxense_display_name');
         setPlaceholder(getOrCreateDisplayName());
+      } else {
+        setNickname(saved);
       }
 
       // Kayıtlı renk varsa onu yükle
@@ -53,7 +55,9 @@ export default function PlayPage() {
 
   async function handlePlay() {
     const trimmed = nickname.trim();
-    if (trimmed) localStorage.setItem('approxense_display_name', trimmed);
+    // Boş bırakılmışsa placeholder'daki komik ismi kaydet
+    const finalName = trimmed || placeholder;
+    localStorage.setItem('approxense_display_name', finalName);
     savePlayerHue(selectedColor.hue);
     router.push('/room/new');
   }
