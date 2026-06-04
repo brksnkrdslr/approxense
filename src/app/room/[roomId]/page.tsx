@@ -340,10 +340,12 @@ export default function RoomPage() {
     };
   }, [roomId]);
 
-  // Overlay açıksa ve players yüklenince — odadaki isimleri kontrol et, uygun komik isim öner
+  // Overlay açıksa ve players yüklenince — sadece ilk kez isim atanacaksa rastgele isim öner
   const nickInputTouchedRef = useRef(false);
+  const isEditModeRef = useRef(false); // true = düzenleme, false = ilk kez isim atama
   useEffect(() => {
     if (!showNickname || nickInputTouchedRef.current || players.length === 0) return;
+    if (isEditModeRef.current) return; // düzenleme modunda rastgele isim önerme
     const takenNames = players.map((p) => p.displayName).filter(Boolean) as string[];
     setNickInput(pickGuestName(takenNames));
   }, [players, showNickname]);
@@ -552,6 +554,7 @@ export default function RoomPage() {
       localStorage.setItem('approxense_display_name', newName);
       savePlayerColorHex(nickSelectedColor.hex);
       setMyDisplayName(newName);
+      isEditModeRef.current = false;
       setShowNickname(false);
       channelRef.current?.track({
         playerId: playerId.current,
@@ -697,6 +700,7 @@ export default function RoomPage() {
               const colorMatch = NICK_COLORS.find(c => c.hex === currentHex);
               setNickSelectedColor(colorMatch ?? NICK_COLORS[7]);
               nickInputTouchedRef.current = false;
+              isEditModeRef.current = true; // rastgele isim önerisini engelle
               setShowNickname(true);
             }}
           />
