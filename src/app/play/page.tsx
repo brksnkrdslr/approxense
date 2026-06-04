@@ -2,22 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { savePlayerHue, savePlayerColorHex, getSavedDisplayName, pickGuestName, getPlayerHue } from '@/lib/utils';
+import { savePlayerColorHex, getSavedDisplayName, pickGuestName, SWATCH_COLORS } from '@/lib/utils';
 
-const PRESET_COLORS = [
-  { hue: 0,   hex: '#EF4444', label: 'Kırmızı' },
-  { hue: 20,  hex: '#F97316', label: 'Turuncu' },
-  { hue: 45,  hex: '#F59E0B', label: 'Amber' },
-  { hue: 84,  hex: '#84CC16', label: 'Yeşil-Sarı' },
-  { hue: 142, hex: '#22C55E', label: 'Yeşil' },
-  { hue: 172, hex: '#14B8A6', label: 'Teal' },
-  { hue: 200, hex: '#0EA5E9', label: 'Mavi' },
-  { hue: 231, hex: '#6366F1', label: 'İndigo' },
-  { hue: 262, hex: '#A855F7', label: 'Mor' },
-  { hue: 291, hex: '#D946EF', label: 'Fuşya' },
-  { hue: 330, hex: '#F43F5E', label: 'Gül' },
-  { hue: 0,   hex: '#78716C', label: 'Taş' },
-];
+// Swatch renkleri tek kaynaktan (utils.ts) geliyor
+const PRESET_COLORS = SWATCH_COLORS.map((hex) => ({ hex }));
 
 export default function PlayPage() {
   const router = useRouter();
@@ -48,8 +36,7 @@ export default function PlayPage() {
     const isEmpty = !nickname.trim();
     const finalName = isEmpty ? pickGuestName() : nickname.trim();
     localStorage.setItem('approxense_display_name', finalName);
-    savePlayerColorHex(selectedColor.hex); // hex direkt kaydet — hue dönüşümü yok
-    savePlayerHue(selectedColor.hue);      // geriye uyumluluk için hue da sakla
+    savePlayerColorHex(selectedColor.hex);
     router.push('/room/new');
   }
 
@@ -145,8 +132,8 @@ export default function PlayPage() {
             const isSelected = selectedColor.hex === color.hex;
             return (
               <button
-                key={color.hex + color.label}
-                aria-label={color.label}
+                key={color.hex}
+                aria-label={color.hex}
                 onClick={() => setSelectedColor(color)}
                 className="rounded-full cursor-pointer flex items-center justify-center"
                 style={{

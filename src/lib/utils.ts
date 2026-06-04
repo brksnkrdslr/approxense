@@ -43,10 +43,14 @@ export function saveDisplayName(name: string): void {
   if (name.trim()) localStorage.setItem('approxense_display_name', name.trim());
 }
 
-export const PLAYER_COLORS = [
-  '#6366f1', '#f59e0b', '#10b981', '#ef4444',
-  '#3b82f6', '#ec4899', '#8b5cf6', '#14b8a6',
+// Swatch renkleri — play/page ve room/page ile aynı liste, tek kaynak
+export const SWATCH_COLORS = [
+  '#EF4444', '#F97316', '#F59E0B', '#84CC16',
+  '#22C55E', '#14B8A6', '#0EA5E9', '#6366F1',
+  '#A855F7', '#D946EF', '#F43F5E', '#78716C',
 ];
+
+export const PLAYER_COLORS = SWATCH_COLORS;
 
 export function hueToColor(hue: number): string {
   // HSL → hex: saturation 90%, lightness 55% — canlı ama göze batmayan
@@ -69,12 +73,19 @@ export function hueToColor(hue: number): string {
 
 export function getPlayerColor(): string {
   if (typeof window === 'undefined') return '#6366F1';
-  // Hex direkt kaydedilmişse onu kullan
-  const hex = localStorage.getItem('approxense_player_color');
-  if (hex && hex.startsWith('#')) return hex;
-  // Eski hue tabanlı kayıt varsa dönüştür (geriye uyumluluk)
-  const hue = localStorage.getItem('approxense_player_hue');
-  return hue ? hueToColor(Number(hue)) : '#6366F1';
+  const stored = localStorage.getItem('approxense_player_color');
+  // Kaydedilmiş hex swatch listesinde varsa direkt kullan
+  if (stored && SWATCH_COLORS.includes(stored)) return stored;
+  // Eski/yanlış değer varsa swatch'tan en yakın hue'ya göre bul
+  const hue = Number(localStorage.getItem('approxense_player_hue') ?? 231);
+  const swatchHues = [0, 20, 45, 84, 142, 172, 200, 231, 262, 291, 330, 0];
+  let best = 7; // indigo default
+  let minDiff = 999;
+  swatchHues.forEach((h, i) => {
+    const diff = Math.abs(h - hue);
+    if (diff < minDiff) { minDiff = diff; best = i; }
+  });
+  return SWATCH_COLORS[best];
 }
 
 export function getPlayerHue(): number {

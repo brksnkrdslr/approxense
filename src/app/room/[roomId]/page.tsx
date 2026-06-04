@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { getOrCreatePlayerId, getOrCreateDisplayName, getPlayerColor, getPlayerHue, hueToColor, savePlayerHue, savePlayerColorHex, getSavedDisplayName, pickGuestName } from '@/lib/utils';
+import { getOrCreatePlayerId, getOrCreateDisplayName, getPlayerColor, getPlayerHue, hueToColor, savePlayerColorHex, getSavedDisplayName, pickGuestName, SWATCH_COLORS } from '@/lib/utils';
 import { getSettings, saveSettings } from '@/lib/questions';
 import { GameSettings, DEFAULT_SETTINGS } from '@/types';
 import SettingsPanel from '@/components/game/SettingsPanel';
@@ -536,14 +536,8 @@ export default function RoomPage() {
 
   const cumulativeScore = rounds.reduce((s, r) => s + r.finalScore, 0);
 
-  const NICK_COLORS = [
-    { hue: 0,   hex: '#EF4444' }, { hue: 20,  hex: '#F97316' },
-    { hue: 45,  hex: '#F59E0B' }, { hue: 84,  hex: '#84CC16' },
-    { hue: 142, hex: '#22C55E' }, { hue: 172, hex: '#14B8A6' },
-    { hue: 200, hex: '#0EA5E9' }, { hue: 231, hex: '#6366F1' },
-    { hue: 262, hex: '#A855F7' }, { hue: 291, hex: '#D946EF' },
-    { hue: 330, hex: '#F43F5E' }, { hue: 0,   hex: '#78716C' },
-  ];
+  // Tek kaynak: utils.ts SWATCH_COLORS
+  const NICK_COLORS = SWATCH_COLORS.map((hex) => ({ hex }));
   const [nickSelectedColor, setNickSelectedColor] = useState(NICK_COLORS[7]);
 
   if (showNickname) {
@@ -552,19 +546,11 @@ export default function RoomPage() {
       const isEmpty = !nickInput.trim();
       const newName = isEmpty ? pickGuestName() : nickInput.trim();
       if (isEmpty) {
-        const randColor = [
-          { hue: 0, hex: '#EF4444' }, { hue: 20, hex: '#F97316' }, { hue: 45, hex: '#F59E0B' },
-          { hue: 84, hex: '#84CC16' }, { hue: 142, hex: '#22C55E' }, { hue: 172, hex: '#14B8A6' },
-          { hue: 200, hex: '#0EA5E9' }, { hue: 231, hex: '#6366F1' }, { hue: 262, hex: '#A855F7' },
-          { hue: 291, hex: '#D946EF' }, { hue: 330, hex: '#F43F5E' },
-        ][Math.floor(Math.random() * 11)];
-        setNickSelectedColor(randColor);
-        setNickHue(randColor.hue);
+        const randHex = SWATCH_COLORS[Math.floor(Math.random() * SWATCH_COLORS.length)];
+        setNickSelectedColor({ hex: randHex });
       }
       localStorage.setItem('approxense_display_name', newName);
       savePlayerColorHex(nickSelectedColor.hex);
-      savePlayerHue(nickSelectedColor.hue);
-      setNickHue(nickSelectedColor.hue);
       setMyDisplayName(newName);
       setShowNickname(false);
       channelRef.current?.track({
@@ -628,7 +614,7 @@ export default function RoomPage() {
               const isSelected = nickSelectedColor.hex === color.hex;
               return (
                 <button
-                  key={color.hex + color.hue}
+                  key={color.hex}
                   onClick={() => setNickSelectedColor(color)}
                   className="rounded-full cursor-pointer flex items-center justify-center"
                   style={{
