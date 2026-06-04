@@ -21,17 +21,22 @@ const PRESET_COLORS = [
 
 export default function PlayPage() {
   const router = useRouter();
-  const savedName = typeof window !== 'undefined' ? getSavedDisplayName() : null;
-  // Kayıtlı isim varsa onu, yoksa komik isim üret (input'a dolu gelir)
-  const [nickname, setNickname] = useState(savedName ?? pickGuestName());
+
+  const [nickname, setNickname] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return getSavedDisplayName() ?? pickGuestName();
+  });
+
   const [selectedColor, setSelectedColor] = useState(() => {
-    const savedHue = typeof window !== 'undefined' ? localStorage.getItem('approxense_player_hue') : null;
+    if (typeof window === 'undefined') return PRESET_COLORS[7];
+    const savedHue = localStorage.getItem('approxense_player_hue');
     if (savedHue) {
       const match = PRESET_COLORS.find(c => Math.abs(c.hue - Number(savedHue)) < 20);
       if (match) return match;
     }
     return PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)];
   });
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -47,7 +52,7 @@ export default function PlayPage() {
     router.push('/room/new');
   }
 
-  const displayName = nickname.trim() || pickGuestName();
+  const displayName = nickname.trim() || '?';
 
   return (
     <div
