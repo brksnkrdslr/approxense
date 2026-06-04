@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { savePlayerHue } from '@/lib/utils';
+import { savePlayerHue, getOrCreateDisplayName, getPlayerHue } from '@/lib/utils';
 
 const PRESET_COLORS = [
   { hue: 0,   hex: '#EF4444', label: 'Kırmızı' },
@@ -19,20 +19,28 @@ const PRESET_COLORS = [
   { hue: 0,   hex: '#78716C', label: 'Taş' },
 ];
 
-const PLACEHOLDER_NAMES = ['Harika', 'Keskin', 'Meraklı', 'Akıllı'];
-
 export default function PlayPage() {
   const router = useRouter();
   const [nickname, setNickname] = useState('');
-  const [selectedColor, setSelectedColor] = useState(PRESET_COLORS[7]); // indigo default
-  const [placeholder, setPlaceholder] = useState(PLACEHOLDER_NAMES[0]);
+  const [placeholder, setPlaceholder] = useState('');
+  // Renk: kayıtlı hue varsa onu kullan, yoksa rastgele seç
+  const [selectedColor, setSelectedColor] = useState(() =>
+    PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)]
+  );
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('approxense_display_name');
-      if (saved && !saved.startsWith('Misafir')) setNickname(saved);
+      // Daha önce özelleştirilmiş isim varsa göster, yoksa otomatik atanan komik ismi placeholder yap
+      if (saved) {
+        setNickname(saved);
+      } else {
+        // İlk kez giriyor — otomatik isim ata ve placeholder olarak göster
+        setPlaceholder(getOrCreateDisplayName());
+      }
 
+      // Kayıtlı renk varsa onu yükle
       const savedHue = localStorage.getItem('approxense_player_hue');
       if (savedHue) {
         const hue = Number(savedHue);
@@ -40,8 +48,6 @@ export default function PlayPage() {
         if (match) setSelectedColor(match);
       }
     }
-    const idx = Math.floor(Math.random() * PLACEHOLDER_NAMES.length);
-    setPlaceholder(PLACEHOLDER_NAMES[idx]);
     setTimeout(() => inputRef.current?.focus(), 80);
   }, []);
 

@@ -10,12 +10,19 @@ function generateUUID(): string {
   });
 }
 
+const GUEST_NAMES = [
+  'Kestirmeci', 'Yaklaşıkçı', 'Kafadengi', 'Ortalamacı', 'Tahminşah',
+  'Şansömer', 'Hesapçı', 'Uydurukçu', 'Kabataslak', 'Aşağıyukarı',
+  'İncegören', 'KeskinGöz', 'Tahminkar', 'Bildimcik', 'Tam12den',
+  'SallamaZiya', 'BeyinBedava', 'KuşBehçet', 'HassasTerazi', 'SonKararım',
+  'VavaBanga', 'NeydiYa', 'Ayangacı', 'YaTutarsa',
+];
+
 export function getOrCreateDisplayName(): string {
   if (typeof window === 'undefined') return 'Misafir';
   const saved = localStorage.getItem('approxense_display_name');
   if (saved) return saved;
-  const num = Math.floor(1000 + Math.random() * 9000);
-  const name = `Misafir${num}`;
+  const name = GUEST_NAMES[Math.floor(Math.random() * GUEST_NAMES.length)];
   localStorage.setItem('approxense_display_name', name);
   return name;
 }
