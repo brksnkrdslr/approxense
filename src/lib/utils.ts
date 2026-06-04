@@ -10,7 +10,7 @@ function generateUUID(): string {
   });
 }
 
-const GUEST_NAMES = [
+export const GUEST_NAMES = [
   'Kestirmeci', 'Yaklaşıkçı', 'Kafadengi', 'Ortalamacı', 'Tahminşah',
   'Şansömer', 'Hesapçı', 'Uydurukçu', 'Kabataslak', 'Aşağıyukarı',
   'İncegören', 'KeskinGöz', 'Tahminkar', 'Bildimcik', 'Tam12den',
@@ -18,11 +18,24 @@ const GUEST_NAMES = [
   'VavaBanga', 'NeydiYa', 'AyanGacı', 'YaTutarsa',
 ];
 
+/** Odadaki alınmış isimler dışında bir komik isim seçer.
+ *  Hepsi alınmışsa listeden rastgele birini döner. */
+export function pickGuestName(takenNames: string[] = []): string {
+  const available = GUEST_NAMES.filter((n) => !takenNames.includes(n));
+  const pool = available.length > 0 ? available : GUEST_NAMES;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+export function getSavedDisplayName(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('approxense_display_name') || null;
+}
+
 export function getOrCreateDisplayName(): string {
   if (typeof window === 'undefined') return 'Misafir';
   const saved = localStorage.getItem('approxense_display_name');
   if (saved) return saved;
-  const name = GUEST_NAMES[Math.floor(Math.random() * GUEST_NAMES.length)];
+  const name = pickGuestName();
   localStorage.setItem('approxense_display_name', name);
   return name;
 }

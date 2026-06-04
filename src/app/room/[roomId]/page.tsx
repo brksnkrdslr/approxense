@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { getOrCreatePlayerId, getOrCreateDisplayName, getPlayerColor, getPlayerHue, hueToColor, savePlayerHue } from '@/lib/utils';
+import { getOrCreatePlayerId, getOrCreateDisplayName, getPlayerColor, getPlayerHue, hueToColor, savePlayerHue, getSavedDisplayName, pickGuestName } from '@/lib/utils';
 import { getSettings, saveSettings } from '@/lib/questions';
 import { GameSettings, DEFAULT_SETTINGS } from '@/types';
 import SettingsPanel from '@/components/game/SettingsPanel';
@@ -41,10 +41,10 @@ export default function RoomPage() {
   // Nickname overlay — sadece daha önce özelleştirilmemiş kullanıcılara göster
   const [showNickname, setShowNickname] = useState(() => {
     if (typeof window === 'undefined') return false;
-    const saved = localStorage.getItem('approxense_display_name');
-    return !saved || saved.startsWith('Misafir');
+    return !getSavedDisplayName();
   });
-  const [nickInput, setNickInput] = useState('');
+  // nickInput: kayıtlı isim yoksa komik isimle başlar, players yüklenince güncellenir
+  const [nickInput, setNickInput] = useState(() => pickGuestName());
   const [nickHue, setNickHue] = useState(() =>
     typeof window !== 'undefined' ? getPlayerHue() : 240
   );
@@ -340,6 +340,14 @@ export default function RoomPage() {
     };
   }, [roomId]);
 
+  // Overlay açıksa ve players yüklenince — odadaki isimleri kontrol et, uygun komik isim öner
+  const nickInputTouchedRef = useRef(false);
+  useEffect(() => {
+    if (!showNickname || nickInputTouchedRef.current || players.length === 0) return;
+    const takenNames = players.map((p) => p.displayName).filter(Boolean) as string[];
+    setNickInput(pickGuestName(takenNames));
+  }, [players, showNickname]);
+
   // inputValue ve submitGuess ref'lerini güncel tut (broadcast closure'ları için)
   useEffect(() => { inputValueRef.current = inputValue; }, [inputValue]);
   useEffect(() => { submitGuessRef.current = submitGuess; });
@@ -541,8 +549,8 @@ export default function RoomPage() {
   if (showNickname) {
     const displayPreview = nickInput.trim() || 'Oyuncu';
     const confirmNickname = () => {
-      const newName = nickInput.trim() || getOrCreateDisplayName();
-      if (nickInput.trim()) localStorage.setItem('approxense_display_name', nickInput.trim());
+      const newName = nickInput.trim() || pickGuestName();
+      localStorage.setItem('approxense_display_name', newName);
       savePlayerHue(nickSelectedColor.hue);
       setNickHue(nickSelectedColor.hue);
       setMyDisplayName(newName);
@@ -584,7 +592,7 @@ export default function RoomPage() {
             autoFocus
             type="text"
             value={nickInput}
-            onChange={(e) => setNickInput(e.target.value)}
+            onChange={(e) => { nickInputTouchedRef.current = true; setNickInput(e.target.value); }}
             onKeyDown={(e) => e.key === 'Enter' && confirmNickname()}
             placeholder="Takma adın"
             maxLength={20}

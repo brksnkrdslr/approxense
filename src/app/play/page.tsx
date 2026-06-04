@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { savePlayerHue, getOrCreateDisplayName, getPlayerHue } from '@/lib/utils';
+import { savePlayerHue, getSavedDisplayName, pickGuestName, getPlayerHue } from '@/lib/utils';
 
 const PRESET_COLORS = [
   { hue: 0,   hex: '#EF4444', label: 'Kırmızı' },
@@ -21,48 +21,31 @@ const PRESET_COLORS = [
 
 export default function PlayPage() {
   const router = useRouter();
-  const [nickname, setNickname] = useState('');
-  const [placeholder, setPlaceholder] = useState('');
-  // Renk: kayıtlı hue varsa onu kullan, yoksa rastgele seç
-  const [selectedColor, setSelectedColor] = useState(() =>
-    PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)]
-  );
+  const savedName = typeof window !== 'undefined' ? getSavedDisplayName() : null;
+  // Kayıtlı isim varsa onu, yoksa komik isim üret (input'a dolu gelir)
+  const [nickname, setNickname] = useState(savedName ?? pickGuestName());
+  const [selectedColor, setSelectedColor] = useState(() => {
+    const savedHue = typeof window !== 'undefined' ? localStorage.getItem('approxense_player_hue') : null;
+    if (savedHue) {
+      const match = PRESET_COLORS.find(c => Math.abs(c.hue - Number(savedHue)) < 20);
+      if (match) return match;
+    }
+    return PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)];
+  });
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('approxense_display_name');
-      // Misafir ile başlıyorsa veya yoksa — komik isim üret, placeholder olarak göster
-      const isGuest = !saved || saved.startsWith('Misafir');
-      if (isGuest) {
-        // Eski Misafir kaydını temizle, komik isim ata
-        localStorage.removeItem('approxense_display_name');
-        setPlaceholder(getOrCreateDisplayName());
-      } else {
-        setNickname(saved);
-      }
-
-      // Kayıtlı renk varsa onu yükle
-      const savedHue = localStorage.getItem('approxense_player_hue');
-      if (savedHue) {
-        const hue = Number(savedHue);
-        const match = PRESET_COLORS.find(c => Math.abs(c.hue - hue) < 20);
-        if (match) setSelectedColor(match);
-      }
-    }
     setTimeout(() => inputRef.current?.focus(), 80);
   }, []);
 
   async function handlePlay() {
-    const trimmed = nickname.trim();
-    // Boş bırakılmışsa placeholder'daki komik ismi kaydet
-    const finalName = trimmed || placeholder;
+    const finalName = nickname.trim() || pickGuestName();
     localStorage.setItem('approxense_display_name', finalName);
     savePlayerHue(selectedColor.hue);
     router.push('/room/new');
   }
 
-  const displayName = nickname.trim() || placeholder;
+  const displayName = nickname.trim() || pickGuestName();
 
   return (
     <div
