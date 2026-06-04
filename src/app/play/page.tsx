@@ -39,9 +39,11 @@ export default function PlayPage() {
   }, []);
 
   async function handlePlay() {
-    const finalName = nickname.trim() || pickGuestName();
+    const isEmpty = !nickname.trim();
+    const finalName = isEmpty ? pickGuestName() : nickname.trim();
+    const finalColor = isEmpty ? PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)] : selectedColor;
     localStorage.setItem('approxense_display_name', finalName);
-    savePlayerHue(selectedColor.hue);
+    savePlayerHue(finalColor.hue);
     router.push('/room/new');
   }
 

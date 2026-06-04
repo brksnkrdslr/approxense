@@ -549,7 +549,18 @@ export default function RoomPage() {
   if (showNickname) {
     const displayPreview = nickInput.trim() || 'Oyuncu';
     const confirmNickname = () => {
-      const newName = nickInput.trim() || pickGuestName();
+      const isEmpty = !nickInput.trim();
+      const newName = isEmpty ? pickGuestName() : nickInput.trim();
+      if (isEmpty) {
+        const randColor = [
+          { hue: 0, hex: '#EF4444' }, { hue: 20, hex: '#F97316' }, { hue: 45, hex: '#F59E0B' },
+          { hue: 84, hex: '#84CC16' }, { hue: 142, hex: '#22C55E' }, { hue: 172, hex: '#14B8A6' },
+          { hue: 200, hex: '#0EA5E9' }, { hue: 231, hex: '#6366F1' }, { hue: 262, hex: '#A855F7' },
+          { hue: 291, hex: '#D946EF' }, { hue: 330, hex: '#F43F5E' },
+        ][Math.floor(Math.random() * 11)];
+        setNickSelectedColor(randColor);
+        setNickHue(randColor.hue);
+      }
       localStorage.setItem('approxense_display_name', newName);
       savePlayerHue(nickSelectedColor.hue);
       setNickHue(nickSelectedColor.hue);
