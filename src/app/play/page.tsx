@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { savePlayerColorHex, getSavedDisplayName, pickGuestName, SWATCH_COLORS } from '@/lib/utils';
+import { savePlayerColorHex, getSavedDisplayName, pickGuestName, SWATCH_COLORS, getOrCreatePlayerId } from '@/lib/utils';
 
 // Swatch renkleri tek kaynaktan (utils.ts) geliyor
 const PRESET_COLORS = SWATCH_COLORS.map((hex) => ({ hex }));
@@ -14,6 +14,8 @@ export default function PlayPage() {
     if (typeof window === 'undefined') return '';
     return getSavedDisplayName() ?? pickGuestName();
   });
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const [selectedColor, setSelectedColor] = useState(() => {
     if (typeof window === 'undefined') return PRESET_COLORS[7];
@@ -33,11 +35,28 @@ export default function PlayPage() {
   }, []);
 
   async function handlePlay() {
+    if (isLoading) return;
+    setIsLoading(true);
     const isEmpty = !nickname.trim();
     const finalName = isEmpty ? pickGuestName() : nickname.trim();
     localStorage.setItem('approxense_display_name', finalName);
     savePlayerColorHex(selectedColor.hex);
-    router.push('/room/new');
+
+    try {
+      const playerId = getOrCreatePlayerId();
+      const res = await fetch('/api/rooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId }),
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      sessionStorage.setItem('approxense_created_room', data.roomId);
+      router.push(`/room/${data.roomId}`);
+    } catch {
+      setIsLoading(false);
+      router.push('/room/new'); // fallback
+    }
   }
 
   const displayName = nickname.trim() || '?';
@@ -160,16 +179,17 @@ export default function PlayPage() {
       <div className="px-5 mt-auto pb-8 animate-fade-up" style={{ animationDelay: '0.3s' }}>
         <button
           onClick={handlePlay}
-          className="w-full rounded-2xl text-base font-semibold text-white cursor-pointer active:scale-95"
+          disabled={isLoading}
+          className="w-full rounded-2xl text-base font-semibold text-white cursor-pointer active:scale-95 disabled:opacity-70"
           style={{
             height: '54px',
             backgroundColor: selectedColor.hex,
             boxShadow: `0 4px 20px ${selectedColor.hex}40`,
-            transition: 'background-color 0.25s, box-shadow 0.25s, transform 0.1s',
+            transition: 'background-color 0.25s, box-shadow 0.25s, transform 0.1s, opacity 0.15s',
             letterSpacing: '-0.01em',
           }}
         >
-          Oyna
+          {isLoading ? 'Oda oluşturuluyor…' : 'Oyna'}
         </button>
       </div>
     </div>
