@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function GizlilikPage() {
   return (
-    <div className="min-h-full px-5 py-8 overflow-y-auto">
+    <div className="absolute inset-0 overflow-y-auto px-5 py-8">
       {/* Geri butonu */}
       <Link
         href="/"
