@@ -11,8 +11,6 @@ function generateUUID(): string {
 }
 
 export const GUEST_NAMES = [
-  'Kestirmeci', 'Yaklaşıkçı', 'Kafadengi', 'Ortalamacı', 'Tahminşah',
-  'Şansömer', 'Hesapçı', 'Uydurukçu', 'Kabataslak', 'Aşağıyukarı',
   'İncegören', 'KeskinGöz', 'Tahminkar', 'Bildimcik', 'Tam12den',
   'SallamaZiya', 'BeyinBedava', 'KuşBehçet', 'HassasTerazi', 'SonKararım',
   'VavaBanga', 'NeydiYa', 'AyanGacı', 'YaTutarsa',
