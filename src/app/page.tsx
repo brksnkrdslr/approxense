@@ -173,6 +173,17 @@ export default function LandingPage() {
           </button>
         </Link>
       </div>
+
+      {/* ── Footer ── */}
+      <div className="relative z-10 flex justify-center pt-4 pb-1">
+        <Link
+          href="/gizlilik"
+          className="text-xs"
+          style={{ color: 'var(--color-text-secondary)', opacity: 0.6 }}
+        >
+          Gizlilik Politikası
+        </Link>
+      </div>
     </div>
   );
 }
