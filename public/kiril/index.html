@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Kiril Ezber</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kiril Ezber">
+<meta name="theme-color" content="#1b1035">
+<link rel="apple-touch-icon" href="/kiril/icon-180.png">
+<link rel="icon" href="/kiril/icon-180.png">
+<link rel="manifest" href="/kiril/manifest.json">
+<style>
+  :root{
+    --bg-top:#1b1035;
+    --bg-bottom:#0a0518;
+    --card-bg:#ffffff;
+    --accent:#7c5cff;
+    --accent-2:#ff5c8a;
+    --text-dark:#1c1530;
+    --text-muted:#8a83a3;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  /* html ve body ayrı kurallarda: html sıradan blok kalmalı ki body onun tam
+     genişliğini/yüksekliğini doldursun. İkisini birden flex yapmak body'nin
+     kendi içeriğine göre büzülmesine (dar ekranlarda yanlarda boşluk kalmasına)
+     sebep oluyordu. */
+  html{
+    height:100%;
+    min-height:100vh;
+    min-height:100dvh;
+  }
+  body{
+    margin:0; padding:0; height:100%;
+    /* iOS'ta ana ekrana eklenmiş (standalone) modda body'nin height:100%'ü
+       bazen gerçek ekran yüksekliğinden kısa ölçülüyor ve altta beyaz bir boşluk
+       kalıyor. min-height ile gerçek (dinamik) viewport yüksekliğini garantiliyoruz. */
+    min-height:100vh;
+    min-height:100dvh;
+    font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+    background:linear-gradient(160deg, var(--bg-top), var(--bg-bottom));
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+    user-select:none;
+  }
+
+  .phone {
+    position:relative;
+    width:390px;
+    height:844px;
+    max-width:100vw;
+    max-height:100vh;
+    background:radial-gradient(circle at 50% 0%, #2a1a52 0%, #140a2b 60%, #0a0518 100%);
+    border-radius:44px;
+    box-shadow:0 30px 80px rgba(0,0,0,0.6), inset 0 0 0 2px rgba(255,255,255,0.05);
+    display:flex;
+    flex-direction:column;
+    padding:28px 22px 26px;
+    overflow:hidden;
+  }
+
+  /* Gerçek telefonda (ana ekrana eklenmiş/tam ekran) çift çerçeve görünmesin diye
+     dar viewport'larda kart tüm ekranı kaplasın, güvenli alan boşlukları eklensin. */
+  @media (max-width:480px){
+    html,body{ padding:0; }
+    .phone{
+      width:100%;
+      height:100%;
+      max-width:100vw;
+      max-height:100vh;
+      max-height:100dvh;
+      border-radius:0;
+      box-shadow:none;
+      padding:calc(28px + env(safe-area-inset-top)) calc(22px + env(safe-area-inset-right)) calc(26px + env(safe-area-inset-bottom)) calc(22px + env(safe-area-inset-left));
+    }
+  }
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    color:#cfc9e8;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.3px;
+    padding:0 4px;
+  }
+
+  .progress-wrap{
+    flex:1;
+    margin:0 14px;
+    height:6px;
+    background:rgba(255,255,255,0.12);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .progress-bar{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, var(--accent), var(--accent-2));
+    border-radius:6px;
+    transition:width 0.35s ease;
+  }
+
+  .title{
+    text-align:center;
+    color:#fff;
+    font-size:19px;
+    font-weight:700;
+    margin:12px 0 3px;
+    letter-spacing:0.3px;
+  }
+  .subtitle{
+    text-align:center;
+    color:var(--text-muted);
+    font-size:12px;
+    margin-bottom:16px;
+  }
+
+  /* Harflerin reaksiyon hızına göre sıralandığı 2x15 kutucuk ızgarası:
+     en hızlı/ustalaşılan sol üstte, en yavaş/zorlanılan sağ altta. */
+  .letter-grid{
+    display:grid;
+    grid-template-columns:repeat(15, 1fr);
+    grid-auto-rows:1fr;
+    gap:4px;
+    margin-bottom:16px;
+  }
+  .letter-cell{
+    position:relative;
+    aspect-ratio:1/1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:5px;
+    font-size:11px;
+    font-weight:700;
+    color:var(--text-dark);
+    background:#eeecf5;
+    transition:background-color 0.3s ease, transform 0.3s ease;
+  }
+  .letter-cell.mastered{ background:#7fe0a3; cursor:pointer; }
+  .letter-cell.mastered:active{ transform:scale(0.88); }
+  .letter-cell.review{ background:#f28a8a; }
+
+  .stage{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+
+  /* card-slot: kartın giriş/çıkış kayma pozisyonunu yönetir (transform/opacity transition).
+     card: sadece basma (scale) geri bildirimini yönetir. İkisi ayrı transform sahibi olduğu
+     için biri diğerini kesintiye uğratıp geri sıçratmıyor (önceki keyframe-animasyon
+     yaklaşımında yaşanan mili-saniyelik "titreme/dejavu" buradan kaynaklanıyordu). */
+  .card-slot{
+    position:relative;
+    width:100%;
+    height:100%;
+    transition:transform 0.26s ease, opacity 0.26s ease;
+  }
+  .card-slot.no-transition{ transition:none !important; }
+  .card-slot.off-left{ transform:translateX(-120%) rotate(-8deg); opacity:0; }
+  .card-slot.off-right{ transform:translateX(120%) rotate(8deg); opacity:0; }
+
+  .card{
+    position:relative;
+    width:100%;
+    height:100%;
+    background:var(--card-bg);
+    border-radius:32px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 20px 40px rgba(0,0,0,0.35);
+    cursor:pointer;
+    transition:transform 0.12s ease, box-shadow 0.12s ease;
+    touch-action:none;
+  }
+  .card.pressed{
+    transform:scale(0.97);
+    box-shadow:0 10px 24px rgba(0,0,0,0.3);
+  }
+
+  .badge{
+    position:absolute;
+    top:18px;
+    left:18px;
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+    padding:6px 12px;
+    border-radius:20px;
+    opacity:0;
+    transform:translateY(-6px);
+    transition:opacity 0.2s ease, transform 0.2s ease;
+    pointer-events:none;
+    white-space:nowrap;
+  }
+  .badge.show{ opacity:1; transform:translateY(0); }
+  .badge-review{ background:linear-gradient(135deg,#ff8a3d,#ff5c5c); }
+  .badge-check{ background:linear-gradient(135deg,#4dc9ff,#7c5cff); }
+
+  .letter{
+    font-size:150px;
+    font-weight:800;
+    color:var(--text-dark);
+    line-height:1;
+    letter-spacing:2px;
+    white-space:nowrap;
+    max-width:100%;
+  }
+
+  .hold-hint{
+    position:absolute;
+    bottom:26px;
+    font-size:13px;
+    color:var(--text-muted);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:6px;
+    max-width:88%;
+    text-align:center;
+    opacity:0.8;
+    transition:opacity 0.2s ease, color 0.2s ease;
+  }
+  .hold-hint svg{ width:16px; height:16px; flex-shrink:0; }
+  .hold-hint.feedback{ opacity:1; font-weight:700; }
+  .hold-hint.feedback svg{ display:none; }
+  .hold-hint.feedback-fast{ color:#22b573; }
+  .hold-hint.feedback-slow{ color:#e2812f; }
+  .hold-hint.feedback-miss{ color:#8a83a3; }
+
+  .reveal{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%) scale(0.9);
+    background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    color:#fff;
+    padding:12px 21px;
+    border-radius:30px;
+    font-size:30px;
+    font-weight:700;
+    text-align:center;
+    box-shadow:0 10px 24px rgba(124,92,255,0.45);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.2s ease, transform 0.2s ease;
+    max-width:85%;
+    white-space:nowrap;
+  }
+  .reveal small{
+    display:block;
+    font-size:17px;
+    font-weight:500;
+    opacity:0.85;
+    margin-top:2px;
+    white-space:normal;
+  }
+  .card.pressed .reveal{
+    opacity:1;
+    transform:translate(-50%, -50%) scale(1);
+  }
+  .card.pressed .hold-hint{ opacity:0; }
+
+  .bottom-area{
+    padding-top:16px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+  }
+
+  .restart-btn{
+    width:100%;
+    padding:16px;
+    border:none;
+    border-radius:18px;
+    background:rgba(255,255,255,0.08);
+    color:#e5e1fa;
+    font-size:16px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    cursor:pointer;
+    transition:background 0.15s ease, transform 0.1s ease;
+  }
+  .restart-btn:active{ transform:scale(0.98); background:rgba(255,255,255,0.14); }
+  .restart-btn svg{ width:18px; height:18px; }
+
+  .done-screen{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(160deg, var(--bg-top), var(--bg-bottom));
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:0 30px;
+    border-radius:44px;
+    z-index:10;
+  }
+  .done-screen.show{ display:flex; }
+  .done-emoji{ font-size:64px; margin-bottom:18px; }
+  .done-title{ color:#fff; font-size:24px; font-weight:800; margin-bottom:8px; }
+  .done-sub{ color:var(--text-muted); font-size:14px; margin-bottom:30px; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+  <div class="topbar">
+    <span id="counter">Ustalaşılan: 0 / 30</span>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <span>🇧🇬</span>
+  </div>
+
+  <div class="title">Kiril Alfabesi Ezberi</div>
+  <div class="subtitle">Harfe basılı tut, okunuşunu gör</div>
+
+  <div class="letter-grid" id="letterGrid"></div>
+
+  <div class="stage">
+    <div class="card-slot" id="cardSlot">
+      <div class="card" id="card">
+        <div class="badge" id="badge"></div>
+        <div class="letter" id="letter">А а</div>
+
+        <div class="reveal" id="reveal">
+          AH
+          <small id="revealNote"></small>
+        </div>
+
+        <div class="hold-hint" id="holdHint">
+          <svg id="holdIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11V6a3 3 0 016 0v5"/><path d="M5 11h14v6a5 5 0 01-5 5h-4a5 5 0 01-5-5v-6z"/></svg>
+          <span id="holdText">Basılı tut · bırakınca sıradaki</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="done-screen" id="doneScreen">
+      <div class="done-emoji">🎉</div>
+      <div class="done-title">Tüm harflerde hızlandın!</div>
+      <div class="done-sub">30 harfin de tepkin artık anlık. İstersen baştan başlayıp tekrar çalışabilirsin.</div>
+    </div>
+  </div>
+
+  <div class="bottom-area">
+    <button class="restart-btn" id="restartBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v6h6"/><path d="M20 20v-6h-6"/><path d="M4 10a8 8 0 0114-5.3L20 8"/><path d="M20 14a8 8 0 01-14 5.3L4 16"/></svg>
+      Baştan Başla
+    </button>
+  </div>
+
+</div>
+
+<script>
+const letters = [
+  { l:"А а", tr:"A",   note:"Türkçe 'a' gibi" },
+  { l:"Б б", tr:"B",   note:"Türkçe 'b' gibi" },
+  { l:"В в", tr:"V",   note:"Türkçe 'v' gibi" },
+  { l:"Г г", tr:"G",   note:"Türkçe 'g' gibi (galoş)" },
+  { l:"Д д", tr:"D",   note:"Türkçe 'd' gibi" },
+  { l:"Е е", tr:"E",   note:"Türkçe 'e' gibi" },
+  { l:"Ж ж", tr:"J",   note:"Türkçe 'j' gibi (jurnal)" },
+  { l:"З з", tr:"Z",   note:"Türkçe 'z' gibi" },
+  { l:"И и", tr:"İ",   note:"Türkçe 'i' gibi" },
+  { l:"Й й", tr:"Y",   note:"Kısa 'y' sesi (yumuşak i)" },
+  { l:"К к", tr:"K",   note:"Türkçe 'k' gibi" },
+  { l:"Л л", tr:"L",   note:"Türkçe 'l' gibi" },
+  { l:"М м", tr:"M",   note:"Türkçe 'm' gibi" },
+  { l:"Н н", tr:"N",   note:"Türkçe 'n' gibi" },
+  { l:"О о", tr:"O",   note:"Türkçe 'o' gibi" },
+  { l:"П п", tr:"P",   note:"Türkçe 'p' gibi" },
+  { l:"Р р", tr:"R",   note:"Türkçe 'r' gibi" },
+  { l:"С с", tr:"S",   note:"Türkçe 's' gibi" },
+  { l:"Т т", tr:"T",   note:"Türkçe 't' gibi" },
+  { l:"У у", tr:"U",   note:"Türkçe 'u' gibi" },
+  { l:"Ф ф", tr:"F",   note:"Türkçe 'f' gibi" },
+  { l:"Х х", tr:"H",   note:"Kalın, hırıltılı 'h'" },
+  { l:"Ц ц", tr:"TS",  note:"'ts' sesi (çift s gibi)" },
+  { l:"Ч ч", tr:"Ç",   note:"Türkçe 'ç' gibi" },
+  { l:"Ш ш", tr:"Ş",   note:"Türkçe 'ş' gibi" },
+  { l:"Щ щ", tr:"ŞT",  note:"'ş' + 't' birlikte (şt)" },
+  { l:"Ъ ъ", tr:"Ë",   note:"Kapalı, kalın 'ı'ya yakın ses" },
+  { l:"Ь ь", tr:"—",   note:"Ses vermez, önceki ünsüzü yumuşatır" },
+  { l:"Ю ю", tr:"YU",  note:"Türkçe 'yu' gibi" },
+  { l:"Я я", tr:"YA",  note:"Türkçe 'ya' gibi" },
+];
+
+const INVALID_MS = 3000;      // bu süreden uzun sürerse ölçüm sayılmaz (ekrana bakılmıyor demektir)
+const FALLBACK_SLOW_MS = 1600; // yeterli veri toplanana kadar kullanılan sabit "yavaş" sınırı
+const FALLBACK_FAST_MS = 900;  // yeterli veri toplanana kadar kullanılan sabit "hızlı/ustalaşma" sınırı
+const SLOW_FACTOR = 1.3;       // ortalamanın bu katından yavaşsa "zorlanılıyor" sayılır
+const REQUEUE_MIN = 3, REQUEUE_MAX = 6; // zorlanılan harf kaç kart sonra tekrar sorulsun
+const MASTERY_CHECK_AFTER = 3; // bu kadar zorlanılan/yeni harften sonra bir ustalaşılan harf sınansın
+const INSTANT_MS = 500;         // bu kadar hızlı bırakılan cevap ortalamaya bakılmaksızın "anlık" sayılır
+const INSTANT_HITS_TO_MASTER = 2; // anlık sayılan cevap bu kadar kez tekrarlanınca harf doğrudan ustalaşılan olur
+
+let currentIdx = 0;
+let queue = [];
+let pressing = false;
+let shownAt = 0;
+let globalCount = 0;
+let globalSum = 0;
+let sinceMasteryCheck = 0;
+let lastMasteryIdx = null;
+let isMasteryCheckCard = false;
+
+const cardSlot = document.getElementById('cardSlot');
+const card = document.getElementById('card');
+const letterEl = document.getElementById('letter');
+const reveal = document.getElementById('reveal');
+const revealNote = document.getElementById('revealNote');
+const counter = document.getElementById('counter');
+const progressBar = document.getElementById('progressBar');
+const doneScreen = document.getElementById('doneScreen');
+const restartBtn = document.getElementById('restartBtn');
+const badge = document.getElementById('badge');
+const holdHint = document.getElementById('holdHint');
+const holdText = document.getElementById('holdText');
+const letterGrid = document.getElementById('letterGrid');
+
+const gridCells = letters.map((item, i) => {
+  const cell = document.createElement('div');
+  cell.className = 'letter-cell';
+  cell.textContent = item.l.split(' ')[0];
+  cell.addEventListener('click', () => demoteFromMastery(i));
+  letterGrid.appendChild(cell);
+  return cell;
+});
+
+function demoteFromMastery(i) {
+  const item = letters[i];
+  if (!item.mastered) return;
+  item.mastered = false;
+  item.instantHits = 0;
+  requeueSoon(i);
+  updateTopbar();
+  updateLetterGrid();
+}
+
+function updateLetterGrid() {
+  const firstRects = gridCells.map(el => el.getBoundingClientRect());
+
+  // Önce statüye göre grupla (ustalaşılan / nötr / zorlanılan), sonra her grup
+  // içinde reaksiyon süresine göre sırala. Sadece avg'ye göre sıralamak, statüsü
+  // farklı harflerin (örn. yeşil bir harf iki nötr harfin arasına) karışmasına
+  // sebep oluyordu.
+  function statusRank(item) {
+    if (item.mastered) return 0;
+    if (item.needsReview) return 2;
+    return 1;
+  }
+
+  const order = letters.map((_, i) => i).sort((a, b) => {
+    const ra = statusRank(letters[a]), rb = statusRank(letters[b]);
+    if (ra !== rb) return ra - rb;
+    const av = letters[a].avg, bv = letters[b].avg;
+    if (av === null && bv === null) return a - b;
+    if (av === null) return 1;
+    if (bv === null) return -1;
+    return av - bv;
+  });
+  order.forEach(i => letterGrid.appendChild(gridCells[i]));
+
+  letters.forEach((item, i) => {
+    const cell = gridCells[i];
+    cell.classList.toggle('mastered', !!item.mastered);
+    cell.classList.toggle('review', !!(item.needsReview && !item.mastered));
+  });
+
+  gridCells.forEach((el, i) => {
+    const first = firstRects[i];
+    const last = el.getBoundingClientRect();
+    const dx = first.left - last.left;
+    const dy = first.top - last.top;
+    if (dx || dy) {
+      el.style.transition = 'none';
+      el.style.transform = `translate(${dx}px, ${dy}px)`;
+      void el.offsetWidth;
+      el.style.transition = '';
+      el.style.transform = '';
+    }
+  });
+}
+
+function resetStats() {
+  letters.forEach(it => { it.attempts = 0; it.sum = 0; it.avg = null; it.mastered = false; it.needsReview = false; it.instantHits = 0; });
+  globalCount = 0;
+  globalSum = 0;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function unmasteredPool() {
+  return shuffle(letters.map((_, i) => i).filter(i => !letters[i].mastered));
+}
+
+function refillQueue() {
+  if (queue.length >= 6) return;
+  const pool = unmasteredPool();
+  if (pool.length === 0) return;
+  if (queue.length && pool[0] === queue[queue.length - 1] && pool.length > 1) {
+    [pool[0], pool[1]] = [pool[1], pool[0]];
+  }
+  queue = queue.concat(pool);
+}
+
+function requeueSoon(idx) {
+  const offset = REQUEUE_MIN + Math.floor(Math.random() * (REQUEUE_MAX - REQUEUE_MIN + 1));
+  queue.splice(Math.min(offset, queue.length), 0, idx);
+}
+
+function pickMasteryCheckIndex() {
+  const masteredIdx = letters.map((_, i) => i).filter(i => letters[i].mastered);
+  if (masteredIdx.length === 0) return null;
+  shuffle(masteredIdx);
+  let pick = masteredIdx[0];
+  if (masteredIdx.length > 1 && pick === lastMasteryIdx) pick = masteredIdx[1];
+  lastMasteryIdx = pick;
+  return pick;
+}
+
+function getNextIndex() {
+  refillQueue();
+
+  if (sinceMasteryCheck >= MASTERY_CHECK_AFTER) {
+    const checkIdx = pickMasteryCheckIndex();
+    if (checkIdx !== null) {
+      sinceMasteryCheck = 0;
+      isMasteryCheckCard = true;
+      return checkIdx;
+    }
+  }
+
+  if (queue.length === 0) return null;
+
+  isMasteryCheckCard = false;
+  sinceMasteryCheck++;
+  return queue.shift();
+}
+
+function masteredCount() {
+  return letters.filter(l => l.mastered).length;
+}
+
+function updateTopbar() {
+  const m = masteredCount();
+  counter.textContent = "Ustalaşılan: " + m + " / " + letters.length;
+  progressBar.style.width = (m / letters.length * 100) + "%";
+}
+
+function fitLetter() {
+  const maxWidth = card.clientWidth - 48;
+  let fontSize = 150;
+  letterEl.style.fontSize = fontSize + "px";
+  while (letterEl.scrollWidth > maxWidth && fontSize > 60) {
+    fontSize -= 4;
+    letterEl.style.fontSize = fontSize + "px";
+  }
+}
+
+function renderCard() {
+  const item = letters[currentIdx];
+  letterEl.textContent = item.l;
+  fitLetter();
+  reveal.firstChild.textContent = item.tr + " ";
+  revealNote.textContent = item.note;
+
+  if (isMasteryCheckCard) {
+    badge.textContent = "🧠 Hafıza kontrolü";
+    badge.className = "badge show badge-check";
+  } else if (item.needsReview && !item.mastered) {
+    badge.textContent = "🔁 Zorlandığın harf";
+    badge.className = "badge show badge-review";
+  } else {
+    badge.className = "badge";
+  }
+
+  updateTopbar();
+  updateLetterGrid();
+  shownAt = performance.now();
+}
+
+function showDone() {
+  doneScreen.classList.add('show');
+}
+
+function setFeedback(text, kind) {
+  holdText.textContent = text;
+  holdHint.classList.remove('feedback-fast', 'feedback-slow', 'feedback-miss');
+  holdHint.classList.add('feedback', 'feedback-' + kind);
+}
+
+function clearFeedback() {
+  holdText.textContent = 'Basılı tut · bırakınca sıradaki';
+  holdHint.classList.remove('feedback', 'feedback-fast', 'feedback-slow', 'feedback-miss');
+}
+
+function processAnswer(reactionMs) {
+  const item = letters[currentIdx];
+
+  if (reactionMs > INVALID_MS) {
+    setFeedback('Kaçırdın · sayılmadı', 'miss');
+    return;
+  }
+
+  globalCount++;
+  globalSum += reactionMs;
+  const avgNow = globalSum / globalCount;
+
+  item.attempts++;
+  item.sum += reactionMs;
+  item.avg = item.sum / item.attempts;
+
+  const slowBar = globalCount >= 3 ? avgNow * SLOW_FACTOR : FALLBACK_SLOW_MS;
+  const secs = (reactionMs / 1000).toFixed(1) + "sn";
+
+  if (reactionMs > slowBar) {
+    const wasMastered = item.mastered;
+    item.needsReview = true;
+    item.mastered = false;
+    item.instantHits = 0;
+    requeueSoon(currentIdx);
+    setFeedback(secs + (wasMastered ? ' · tekrar zorlanılanlara döndü' : ' · tekrar sorulacak'), 'slow');
+  } else {
+    if (reactionMs <= INSTANT_MS) item.instantHits++;
+    const fastBar = globalCount >= 3 ? avgNow : FALLBACK_FAST_MS;
+    const wasMastered = item.mastered;
+    // Ortalamaya göre yeterince hızlıysan YA DA art arda değil ama en az iki kez
+    // "anlık" (INSTANT_MS altı) tepki verdiysen doğrudan ustalaşılan sayılıyorsun —
+    // kümülatif ortalama eski yavaş denemelerden dolayı yükseldiğinde bile.
+    item.mastered = (item.attempts >= 2 && item.avg <= fastBar) || item.instantHits >= INSTANT_HITS_TO_MASTER;
+    if (item.mastered) item.needsReview = false;
+    setFeedback(secs + (item.mastered && !wasMastered ? ' · ustalaştın! ⚡' : ''), 'fast');
+  }
+}
+
+function slideInFromRight() {
+  // Sağdan gelen yeni kartı önce görünmez şekilde (transition kapalı) sağa ışınla,
+  // sonra bir sonraki karede transition'ı açıp merkeze kaydır. Böylece eski kartın
+  // "forwards" animasyon bitişiyle yenisinin başlangıcı arasında geri sıçrama olmaz.
+  cardSlot.classList.add('no-transition', 'off-right');
+  cardSlot.classList.remove('off-left');
+  void cardSlot.offsetHeight; // reflow'u zorla, sıçramanın anında uygulanmasını sağla
+  cardSlot.classList.remove('no-transition');
+  // requestAnimationFrame yerine kısa bir setTimeout: tarayıcının "sıçrama" durumunu
+  // gerçekten boyayıp kaydetmesi için bir kare payı bırakıyor, rAF'ın hiç tetiklenmediği
+  // (örn. sekme arka planda/pasifken) durumlarda da kartın ekranda takılı kalmasını önler.
+  setTimeout(() => {
+    cardSlot.classList.remove('off-right');
+  }, 20);
+}
+
+function advance() {
+  cardSlot.classList.add('off-left');
+  setTimeout(() => {
+    const next = getNextIndex();
+    if (next === null) {
+      cardSlot.classList.add('no-transition');
+      cardSlot.classList.remove('off-left');
+      void cardSlot.offsetHeight;
+      cardSlot.classList.remove('no-transition');
+      showDone();
+      return;
+    }
+    currentIdx = next;
+    renderCard();
+    clearFeedback();
+    slideInFromRight();
+  }, 260);
+}
+
+function restart() {
+  resetStats();
+  queue = [];
+  sinceMasteryCheck = 0;
+  lastMasteryIdx = null;
+  isMasteryCheckCard = false;
+  doneScreen.classList.remove('show');
+  currentIdx = getNextIndex();
+  renderCard();
+  clearFeedback();
+  slideInFromRight();
+}
+
+function startPress() {
+  if (doneScreen.classList.contains('show')) return;
+  pressing = true;
+  card.classList.add('pressed');
+}
+
+function endPress() {
+  if (!pressing) return;
+  pressing = false;
+  card.classList.remove('pressed');
+  const reactionMs = performance.now() - shownAt;
+  processAnswer(reactionMs);
+  advance();
+}
+
+card.addEventListener('mousedown', startPress);
+card.addEventListener('mouseup', endPress);
+card.addEventListener('mouseleave', () => { if (pressing) { pressing = false; card.classList.remove('pressed'); } });
+card.addEventListener('touchstart', (e) => { e.preventDefault(); startPress(); }, { passive: false });
+card.addEventListener('touchend', (e) => { e.preventDefault(); endPress(); }, { passive: false });
+card.addEventListener('touchcancel', () => { pressing = false; card.classList.remove('pressed'); });
+
+restartBtn.addEventListener('click', restart);
+
+resetStats();
+currentIdx = getNextIndex();
+renderCard();
+clearFeedback();
+</script>
+
+</body>
+</html>

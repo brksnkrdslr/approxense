@@ -1,0 +1,12 @@
+{
+  "name": "Kiril Ezber",
+  "short_name": "Kiril Ezber",
+  "start_url": "/kiril",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0518",
+  "theme_color": "#1b1035",
+  "icons": [
+    { "src": "/kiril/icon-180.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
