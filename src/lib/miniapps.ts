@@ -17,4 +17,13 @@ export const miniApps: MiniApp[] = [
     description: 'Bulgarca Kiril alfabesini ezberlemek için flashcard uygulaması',
     addedAt: '2026-07-09',
   },
+  {
+    // İstisna: diğerlerinden farklı olarak public/apps/tagback/index.html YOK —
+    // kendi Next.js deploy'unda barındırılır, next.config.ts rewrites() ile
+    // (beforeFiles) buraya proxy'lenir.
+    slug: 'tagback',
+    name: 'Tagback',
+    description: "QR sticker ile kayıp eşya iadesi (mahremiyet odaklı)",
+    addedAt: '2026-07-10',
+  },
 ];
